@@ -64,7 +64,9 @@ def least_squares(x, y):
     Calculate weigths using least squares in equation y = x*w + eps
     Input:
         x - array(l, n)
-        y - array(n, 1)
+        y - array(l, 1)
+    Output:
+        weights - array(n, 1)
     """
     x, y = np.asmatrix(x), np.asmatrix(y)
     if y.shape[0] == 1:
@@ -73,13 +75,32 @@ def least_squares(x, y):
     return (x.T * x)**(-1) * x.T * y
     
     
+def regression_residuals(x, y):
+    """
+    Calculate regression residuals:
+    y - x * (x' * x)^(-1) * x' * y;
+    Input:
+        x - array(l, n)
+        y - array(l, 1)
+    Output:
+        residuals y - x*w - array(l, 1)
+    """
+    x, y = np.asmatrix(x), np.asmatrix(y)
+    if y.shape[0] == 1:
+        y = y.T
+    
+    return y - x * least_squares(x, y)
+    
+    
 def get_vif(x):
     """
     Calculate variance inflation factor
     """
     x = np.asarray(x)
     (numer_objects, number_features) = x.shape
-    print numer_objects, number_features
+    
+    vif = np.empty([number_features, 1])
+    print vif
     
     pass
 
@@ -99,8 +120,8 @@ if __name__ == "__main__":
     print 'Done'
     x = np.array([[1, 2], [5, 7], [12, 1]])
 
-    print least_squares(x, np.array([[1, 1, 2]]))
-    get_vif(x)
+    # print regression_residuals(x, np.array([[1, 1, 2]]))
+    # print get_vif(x)
     
     
     
