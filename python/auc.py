@@ -4,7 +4,6 @@ def get_auc(labels, probabilities):
     """
     Calculate Area Under Curve for classification.
     
-    
     Arguments:
     - `labels`: class labels in {0, 1}
     - `probabilities`: probabilities of "1" class
@@ -59,7 +58,42 @@ def get_auc(labels, probabilities):
 
     return (auc, fpr, tpr)
     
+    
+def least_squares(x, y):
+    x, y = np.asmatrix(x), np.asmatrix(y)
+    print y
+    print x.T
+    print (x.T * x)^(-1) * x.T 
+    # return (x' * x)^(-1) * x' * y
+    
+    
+def get_vif(x):
+    """
+    Calculate variance inflation factor
+    """
+    x = np.asarray(x)
+    (numer_objects, number_features) = x.shape
+    print numer_objects, number_features
+    
+    pass
+
+
+def get_belsley(x):
+    """
+    Calculate ? FIXIT What?
+    
+    """
+    pass
+
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+    print 'Done'
+    x = np.array([[1, 2], [5, 7], [12, 1]])
+
+    least_squares(x, np.array([[1], [1]]))
+    get_vif(x)
+    
+    
+    
