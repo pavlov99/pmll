@@ -60,11 +60,17 @@ def get_auc(labels, probabilities):
     
     
 def least_squares(x, y):
+    """
+    Calculate weigths using least squares in equation y = x*w + eps
+    Input:
+        x - array(l, n)
+        y - array(n, 1)
+    """
     x, y = np.asmatrix(x), np.asmatrix(y)
-    print y
-    print x.T
-    print (x.T * x)^(-1) * x.T 
-    # return (x' * x)^(-1) * x' * y
+    if y.shape[0] == 1:
+        y = y.T
+
+    return (x.T * x)**(-1) * x.T * y
     
     
 def get_vif(x):
@@ -89,10 +95,11 @@ def get_belsley(x):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+    
     print 'Done'
     x = np.array([[1, 2], [5, 7], [12, 1]])
 
-    least_squares(x, np.array([[1], [1]]))
+    print least_squares(x, np.array([[1, 1, 2]]))
     get_vif(x)
     
     
