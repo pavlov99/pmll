@@ -2,7 +2,8 @@ import numpy as np
 
 class ObjectFeatureMatrix(object):
     def __init__(self, matrix):
-        self.__objects = np.asarray(matrix)
+        matrix = np.asmatrix(matrix)
+        self.__objects = matrix
         self.__number_objects, self.__number_features = self.__objects.shape
     
     def vif(self):
@@ -16,13 +17,12 @@ class ObjectFeatureMatrix(object):
             Output:
                 residuals y - x*w - array(l, 1)
             """
-            x, y = np.asmatrix(x), np.asmatrix(y).T
             return np.asarray(y - x * (x.T * x)**(-1) * x.T * y)
         
         vif = np.empty([self.__number_features, 1])
         for i in xrange(self.__number_features):
             rows = range(i) + range(i + 1, self.__number_features)
-            vif[i] = sum((self.__objects[:, i] - np.mean(self.__objects[:, i])) ** 2) /\
+            vif[i] = sum(np.asarray(self.__objects[:, i] - np.mean(self.__objects[:, i])) ** 2) /\
             sum(_regression_residuals(self.__objects[:, rows], self.__objects[:, i]) ** 2)
 
         return vif
@@ -49,3 +49,20 @@ class ObjectFeatureMatrix(object):
         return self.__number_features
     nfeatures = property(get_number_features, doc="return number of features")
 
+
+class DataSet(object):
+    def __init__(self, objects, labels):
+        objects, labels = np.asmatrix(objects), np.asmatrix(labels)
+
+        if labels.shape[0] == 1:
+            labels = labels.T
+        
+        if labels.shape[1] != 1:
+            raise AssertionError("One of the label dimensions must be 1")
+        
+        if labels.shape[0] != objects.shape[0]:
+            raise AssertionError("Number of objects must be equal number of labels")
+        
+        self.labels = labels
+        self.objects = ObjectFeatureMatrix(objects)
+        
