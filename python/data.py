@@ -5,6 +5,14 @@ class ObjectFeatureMatrix(object):
         matrix = np.asmatrix(matrix)
         self.__objects = matrix
         self.__number_objects, self.__number_features = self.__objects.shape
+        
+    def add_data(self, matrix):
+        matrix = np.asmatrix(matrix)
+        if matrix.shape[1] != self.__number_features:
+            raise AssertionError("Additional and current objects has different \
+                numbers of features")
+        self.__objects = np.vstack([self.__objects, matrix])
+        self.__number_objects += matrix.shape[0]
     
     def vif(self):
         def _regression_residuals(x, y):
