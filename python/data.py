@@ -38,9 +38,6 @@ class ObjectFeatureMatrix(object):
         if matrix is not None:
             self.add(matrix)
 
-    def __str__(self):
-        print self.objects
-
     def add(self, matrix):
         matrix = np.asmatrix(matrix)
         if self.nfeatures is not None:
@@ -117,7 +114,10 @@ class DataSet(object):
         if labels.shape[0] != objects.shape[0]:
             raise AssertionError("Number of objects must be equal number of labels")
 
-        self.labels = np.vstack([self.labels, labels])
+        if self.labels is None:
+            self.labels = labels
+        else:
+            self.labels = np.vstack([self.labels, labels])
         self.objects.add(objects)
 
     def get_number_objects(self): 
@@ -132,4 +132,3 @@ class DataSet(object):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-
