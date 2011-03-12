@@ -118,13 +118,3 @@ def get_belsley(x):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-    
-    print 'Done'
-    x = np.array([[1, 2, 4], [5, 7, 2], [12, 1, 7]])
-
-    # print regression_residuals(x, np.array([[1, 1, 2]]))
-    print get_vif(x)
-    # print x - np.tile(np.mean(x, axis=0), (3, 1))
-    
-    
-    
