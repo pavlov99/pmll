@@ -1,6 +1,35 @@
 import numpy as np
 
 class ObjectFeatureMatrix(object):
+    """
+    Class for representation of objects-by-features matrix of features.
+
+    >>> x = np.array([[1, 2, 3], [4, 6, 87], [3, 5, 68], [3, 4, 6]])
+    >>> y = np.array([[1, 2], [4, 6], [3, 5], [3, 4]])
+    >>> m = ObjectFeatureMatrix()
+    >>> m.nobjects
+    0
+    >>> m.nfeatures # return nothing
+    >>> m.add(x)
+    >>> m.nobjects
+    4
+    >>> m.nfeatures
+    3
+    >>> m.objects
+    matrix([[ 1,  2,  3],
+            [ 4,  6, 87],
+            [ 3,  5, 68],
+            [ 3,  4,  6]])
+    >>> m.add(x)
+    >>> m.nobjects
+    8
+    >>> m.nfeatures
+    3
+    >>> m.add(y)
+    Traceback (most recent call last):
+        ...
+    AssertionError: additional and current objects has different numbers of features
+    """
     def __init__(self, matrix=None):
         self.objects = None
         self.nobjects = 0 
@@ -16,7 +45,7 @@ class ObjectFeatureMatrix(object):
         matrix = np.asmatrix(matrix)
         if self.nfeatures is not None:
             if matrix.shape[1] != self.nfeatures:
-                raise AssertionError("Additional and current objects has different numbers of features")
+                raise AssertionError("additional and current objects has different numbers of features")
             self.objects = np.vstack([self.objects, matrix])
             self.nobjects += matrix.shape[0]
         else: # first add
@@ -98,4 +127,9 @@ class DataSet(object):
     def get_number_features(self): 
         return self.objects.nfeatures
     nfeatures = property(get_number_features, doc="return number of features")
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
 
