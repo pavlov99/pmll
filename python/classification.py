@@ -25,7 +25,7 @@ class BaseClassifier(object):
         pass
 
 
-class BinaryClassifierBase(BaseClassifier):
+class BaseBinaryClassifier(BaseClassifier):
     """
     Base class for binary classification
     """
@@ -35,14 +35,15 @@ class BinaryClassifierBase(BaseClassifier):
     number_classes = 2
     cut_off = 0.5
 
-    def get_singular_errors(self, labels, probabilities):
+    def get_singular_errors(self, data):
         """
         Return share of errors (unequal objects)
         """
-        labels, probabilities = np.asarray(labels), np.asarray(probabilities)
+        labels = np.asmatrix(data.labels)
+        probabilities = np.asmatrix(self.classify(data.objects))
         return float(sum(labels != (probabilities > self.cut_off))) / len(labels)
 
-    def get_auc(labels, probabilities):
+    def get_auc(self, labels, probabilities):
         """
         Calculate Area Under Curve for classification.
     
@@ -101,7 +102,7 @@ class BinaryClassifierBase(BaseClassifier):
         return (auc, fpr, tpr)
     
     
-class LeastSquaresBinaryClassifier(BinaryClassifierBase):
+class LeastSquaresBinaryClassifier(BaseBinaryClassifier):
     weights = None
     
     def train(self, data_set):
@@ -114,9 +115,7 @@ class LeastSquaresBinaryClassifier(BinaryClassifierBase):
         return predicted_labels
     
     
-class RandomBinaryClassifier(BinaryClassifierBase):
-    
-    
+class RandomBinaryClassifier(BaseBinaryClassifier):
     def train(self, data_set):
         pass
 
@@ -126,7 +125,9 @@ class RandomBinaryClassifier(BinaryClassifierBase):
         if type(object_feature_matrix) is not ObjectFeatureMatrix:
             raise AssertionError("object`s type is not ObjectFeatureMatrix")
             
-        return [random.randint(0, 1) for i in xrange(object_feature_matrix.nobjects)]
+        predictions = np.asarray([random.randint(0, 1) for i in xrange(object_feature_matrix.nobjects)])
+        predictions = predictions.reshape(-1, 1)
+        return predictions
 
 
 
