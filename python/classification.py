@@ -25,7 +25,7 @@ class BaseClassifier(object):
         pass
 
 
-class BinaryClassifierBase(BaseClassifier):
+class BaseBinaryClassifier(BaseClassifier):
     """
     Base class for binary classification
     """
@@ -35,44 +35,35 @@ class BinaryClassifierBase(BaseClassifier):
     number_classes = 2
     cut_off = 0.5
 
-    def get_singular_errors(self, labels, probabilities):
+    def get_singular_errors(self, data):
         """
         Return share of errors (unequal objects)
         """
-        labels, probabilities = np.asarray(labels), np.asarray(probabilities)
+        labels = np.asmatrix(data.labels)
+        probabilities = np.asmatrix(self.classify(data.objects))
         return float(sum(labels != (probabilities > self.cut_off))) / len(labels)
 
-    def get_auc(labels, probabilities):
+    def get_auc(self, data):
         """
         Calculate Area Under Curve for classification.
     
         Arguments:
-        - `labels`: class labels in {0, 1}
-        - `probabilities`: probabilities of "1" class
+        - `data`: DataSet object
     
         Example:
             size = 100000
-            labels = numpy.asarray(np.random.randint(0, 2, size))
-            import random
-            probabilities = [random.random() for i in xrange(size)]
-
-            auc, fpr, tpr = get_auc(labels, probabilities)
+            zeros = np.zeros([size, 1])
+            data = DataSet(objects=zeros, labels=zeros)
+            
+            auc, fpr, tpr = self.get_auc(data)
             import pylab as p
             p.plot(fpr, tpr)
             p.show()
-
-        >>> get_auc([-1, 1], [0, 0])
-        Traceback (most recent call last):
-            ...
-        ValueError: labels contains not only {0, 1}
-        >>> get_auc([0, 1], [0, 0, 1])
-        Traceback (most recent call last):
-            ...
-        AssertionError: lists has different lengths
-        >>> get_auc([0, 0, 1, 1], [0.0, 0.6, 0.4, 0.8])
-        (0.75, [0, 0, 0.5, 0.5, 1.0], [0, 0.5, 0.5, 1.0, 1.0])
         """
-        labels, probabilities = np.asarray(labels), np.asarray(probabilities)
+
+        labels = np.asarray(data.labels.flatten())[0]
+        probabilities = np.asarray(self.classify(data.objects))
+        
         number_positive = sum(labels == 1)
         number_negative = sum(labels == 0)
     
@@ -101,7 +92,7 @@ class BinaryClassifierBase(BaseClassifier):
         return (auc, fpr, tpr)
     
     
-class LeastSquaresBinaryClassifier(BinaryClassifierBase):
+class LeastSquaresBinaryClassifier(BaseBinaryClassifier):
     weights = None
     
     def train(self, data_set):
@@ -109,14 +100,14 @@ class LeastSquaresBinaryClassifier(BinaryClassifierBase):
         self.weights = (x.T * x) ** (-1) * x.T * y 
 
     def classify(self, object_feature_matrix):
+        if self.weights is None:
+            raise AssertionError("weights are undefined. Did you train?") 
         x = object_feature_matrix.objects
         predicted_labels = x * self.weights
         return predicted_labels
     
     
-class RandomBinaryClassifier(BinaryClassifierBase):
-    
-    
+class RandomBinaryClassifier(BaseBinaryClassifier):
     def train(self, data_set):
         pass
 
@@ -126,14 +117,12 @@ class RandomBinaryClassifier(BinaryClassifierBase):
         if type(object_feature_matrix) is not ObjectFeatureMatrix:
             raise AssertionError("object`s type is not ObjectFeatureMatrix")
             
-        return [random.randint(0, 1) for i in xrange(object_feature_matrix.nobjects)]
+        predictions = np.asarray([random.randint(0, 1) for i in xrange(object_feature_matrix.nobjects)])
+        predictions = predictions.reshape(-1, 1)
+        return predictions
 
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    import doctest
+    doctest.testfile("%s.test" % __file__.split(".", 1)[0])
+    # doctest.testfile("%s.test" % __file__.split(".", 1)[0], verbose=True)
 
