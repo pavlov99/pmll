@@ -100,6 +100,8 @@ class LeastSquaresBinaryClassifier(BaseBinaryClassifier):
         self.weights = (x.T * x) ** (-1) * x.T * y 
 
     def classify(self, object_feature_matrix):
+        if self.weights is None:
+            raise AssertionError("weights are undefined. Did you train?") 
         x = object_feature_matrix.objects
         predicted_labels = x * self.weights
         return predicted_labels
@@ -121,14 +123,6 @@ class RandomBinaryClassifier(BaseBinaryClassifier):
 
 if __name__ == "__main__":
     import doctest
-    doctest.testfile("classification.test")
-    # doctest.testfile("classification.test", verbose=True)
-
-
-
-
-
-
-
-
+    doctest.testfile("%s.test" % __file__.split(".", 1)[0])
+    # doctest.testfile("%s.test" % __file__.split(".", 1)[0], verbose=True)
 

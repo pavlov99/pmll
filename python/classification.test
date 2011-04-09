@@ -1,0 +1,13 @@
+>>> from classification import *
+>>> import numpy as np
+>>> from data import DataSet
+>>> classifier = RandomBinaryClassifier()
+>>> print classifier.number_classes
+2
+>>> size = 100000
+>>> zeros = np.zeros([size, 1])
+>>> data = DataSet(objects=[[-1], [1]], labels=[-1, 1])
+>>> auc, fpr, tpr = classifier.get_auc(data)
+Traceback (most recent call last):
+    ...
+ValueError: labels contains not only {0, 1}

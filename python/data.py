@@ -3,32 +3,6 @@ import numpy as np
 class ObjectFeatureMatrix(object):
     """
     Class for representation of objects-by-features matrix of features.
-
-    >>> x = np.array([[1, 2, 3], [4, 6, 87], [3, 5, 68], [3, 4, 6]])
-    >>> y = np.array([[1, 2], [4, 6], [3, 5], [3, 4]])
-    >>> m = ObjectFeatureMatrix()
-    >>> m.nobjects
-    0
-    >>> m.nfeatures # return nothing
-    >>> m.add(x)
-    >>> m.nobjects
-    4
-    >>> m.nfeatures
-    3
-    >>> m.objects
-    matrix([[ 1,  2,  3],
-            [ 4,  6, 87],
-            [ 3,  5, 68],
-            [ 3,  4,  6]])
-    >>> m.add(x)
-    >>> m.nobjects
-    8
-    >>> m.nfeatures
-    3
-    >>> m.add(y)
-    Traceback (most recent call last):
-        ...
-    AssertionError: additional and current objects has different numbers of features
     """
     def __init__(self, matrix=None):
         self.objects = None
@@ -179,7 +153,73 @@ class DataSet(object):
         return self.objects.nfeatures
     nfeatures = property(get_number_features, doc="return number of features")
 
+    def plot(self, features=(0, 1)):
+        """
+        Plot data in 'features' axis.
+        FIXIT: add more than 8 colors, specified by COLORS
+        """
+        import matplotlib.pyplot as plt
+        COLORS="rbgcmykw"
+
+        labels = np.asarray(self.labels.flatten())[0]
+        uniq_labels = list(set(labels))
+
+        x, y = self.objects.objects[:, features[0]],\
+            self.objects.objects[:, features[1]]
+
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        # the scatter plot:
+        axScatter = plt.subplot(111)
+        # axScatter.set_aspect(1.) # square image
+
+        for index, uniq_label in enumerate(uniq_labels):
+            plt.plot(x[labels == uniq_label], y[labels == uniq_label], 
+                '%so' % COLORS[index])
+
+        # define picture size
+        xlim, ylim = plt.xlim(), plt.ylim()
+
+        # create new axes on the right and on the top of the current axes
+        # The first argument of the new_vertical(new_horizontal) method is
+        # the height (width) of the axes to be created in inches.
+        divider = make_axes_locatable(axScatter)
+        axHistx = divider.append_axes("top", 1.2, pad=0.1, sharex=axScatter)
+        axHisty = divider.append_axes("right", 1.2, pad=0.1, sharey=axScatter)
+
+        # make some axis - labels invisible
+        plt.setp(axHistx.get_xticklabels() + axHisty.get_yticklabels(),
+            visible=False)
+
+        # now determine nice limits by hand:
+        binwidth = 0.5
+        xymax = np.max( [np.max(np.fabs(x)), np.max(np.fabs(y))] )
+        lim = ( int(xymax/binwidth) + 1) * binwidth
+
+        bins = np.arange(-lim, lim + binwidth, binwidth)
+
+        x_bar, y_bar, color = [], [], []
+        for index, uniq_label in enumerate(uniq_labels):
+            x_bar.append(x[labels == uniq_label])
+            y_bar.append(y[labels == uniq_label])
+            color.append(COLORS[index])
+
+        axHistx.hist(x_bar, bins=bins, color=color)
+        axHisty.hist(y_bar, bins=bins, color=color, orientation='horizontal')
+
+        # plot according to size
+        width = xlim[1] - xlim[0]
+        height = ylim[1] - ylim[0]
+        # add +- 5% to border
+        xlim = (xlim[0] - width / 20, xlim[1] + width / 20)
+        ylim = (ylim[0] - height / 20, ylim[1] + height / 20)
+
+        axScatter.set_xlim(xlim)
+        axScatter.set_ylim(ylim)
+
+        # plt.draw()
+        plt.show()
+
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    doctest.testfile("%s.test" % __file__.split(".", 1)[0])
