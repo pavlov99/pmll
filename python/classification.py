@@ -121,6 +121,50 @@ class RandomBinaryClassifier(BaseBinaryClassifier):
         predictions = predictions.reshape(-1, 1)
         return predictions
 
+
+class Irls(object):
+    def __init__(self, objects, labels):
+        objects, labels = np.asmatrix(objects), np.asmatrix(labels)
+        self.__objects = np.hstack([objects, np.ones([objects.shape[0], 1])])
+        self.__labels = labels
+        self.__weights = np.zeros([self.__objects.shape[1], 1])
+        self.__history = {'weights': self.__weights}
+
+    def __logit(self, z): return 1 / (1 + np.exp(-z))
+
+    def classify(self, objects):
+        # conver input to matrix, append constant column and get logit
+        return self.__logit(np.asmatrix(np.hstack([objects,
+                                                   np.ones([objects.shape[0], 1]
+                                                           )])
+                                        ) * self.__weights)
+
+    def train(self, max_iterations=100, accuracy=1e-7,
+              regularization_parameter=1e-7):
+        for iteration in range(max_iterations):
+            probability = self.__logit(self.__objects * self.__weights)
+            B = np.diagflat(probability - np.power(probability, 2))
+            # Dont use -=, it changes history[weights]
+            self.__weights = self.__weights - \
+                (self.__objects.T * B * self.__objects + \
+                 regularization_parameter * np.eye(self.__objects.shape[1]))\
+                 ** (-1) * self.__objects.T * (probability - self.__labels)
+
+            self.__history['weights'] = np.hstack([self.__history['weights'],
+                                                   self.__weights])
+
+            if sum(abs(self.__history['weights'][:, -1] - \
+                           self.__history['weights'][:, -2])) < accuracy:
+                break
+
+    def plot_convergence(self):
+        from matplotlib import pyplot as plt
+        plt.plot(self.__history['weights'].T)
+        plt.show()
+
+    def __str__(self): return '%s\n%s' % (str(self.__objects), str(self.__weights))
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testfile("%s.test" % __file__.split(".", 1)[0])
