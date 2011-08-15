@@ -130,10 +130,12 @@ class Irls(object):
         self.__weights = np.zeros([self.__objects.shape[1], 1])
         self.__history = {'weights': self.__weights}
 
+    def get_weights(self): return self.__weights
+
     def __logit(self, z): return 1 / (1 + np.exp(-z))
 
     def classify(self, objects):
-        # conver input to matrix, append constant column and get logit
+        # convert input to matrix, append constant column and get logit
         return self.__logit(np.asmatrix(np.hstack([objects,
                                                    np.ones([objects.shape[0], 1]
                                                            )])
@@ -162,7 +164,22 @@ class Irls(object):
         plt.plot(self.__history['weights'].T)
         plt.show()
 
-    def __str__(self): return '%s\n%s' % (str(self.__objects), str(self.__weights))
+    def __str__(self):
+	return '%s\n%s' % (str(self.__objects), str(self.__weights))
+
+
+class EmIrls(object):
+    def __init__(self, objects, labels, number_models):
+        objects, labels = np.asmatrix(objects), np.asmatrix(labels)
+        self.__objects = np.hstack([objects, np.ones([objects.shape[0], 1])])
+        self.__labels = labels
+        self.__number_models = number_models
+
+    def train(self):
+        pass
+
+    def classify(self):
+        pass
 
 
 if __name__ == "__main__":
