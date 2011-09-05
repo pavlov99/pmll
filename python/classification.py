@@ -182,11 +182,17 @@ class EmIrls(object):
         self.__labels = labels
         self.__object_model = np.random.randint(0, number_models,
                                                 [self.__objects.shape[0], 1])
-        self.__weights = np.empty([self.__objects.shape[1] + 1, number_models])
         self.__number_models = number_models
+        __init_weights(self)
 
     def __str__(self):
         return str(self.__weights) + str(sum(self.__object_model==0))
+
+    def __init_weights(self):
+        # Init weights for models
+        self.__weights = np.empty([self.__objects.shape[1] + 1,
+                                   self.__number_models])
+        return weights
 
     def train(self):
         for iteration in range(10):
