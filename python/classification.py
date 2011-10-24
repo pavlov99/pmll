@@ -167,9 +167,9 @@ class Irls(object):
 
     def plot_convergence(self):
         from matplotlib import pyplot as plt
-
-        plt.plot(self.__history['weights'].T)
-        plt.show()
+        for weight_index, weights in enumerate(self.__history['weights']):
+            print '{\nname: \"weight#%s\",' % weight_index 
+            print 'data: ', list(np.asarray(weights).flat), '\n},'
 
     def __str__(self):
 	return '%s\n%s' % (str(self.__objects), str(self.__weights))
@@ -183,7 +183,7 @@ class EmIrls(object):
         self.__object_model = np.random.randint(0, number_models,
                                                 [self.__objects.shape[0], 1])
         self.__number_models = number_models
-        __init_weights(self)
+        self.__init_weights()
 
     def __str__(self):
         return str(self.__weights) + str(sum(self.__object_model==0))
@@ -192,23 +192,23 @@ class EmIrls(object):
         # Init weights for models
         self.__weights = np.empty([self.__objects.shape[1] + 1,
                                    self.__number_models])
-        return weights
 
     def train(self):
-        for iteration in range(10):
+        for iteration in range(5):
             print iteration
 
             # M-step
+            # Estimate the most probable model parameters using objects, assigned to model
             for model_index in range(self.__number_models):
                 indeces = np.asarray((self.__object_model == model_index).nonzero()[0].flat)
                 algo = Irls(self.__objects[indeces, :], self.__labels[indeces])
                 algo.train()
                 self.__weights[:, model_index] = np.asarray(algo.get_weights().flat)
 
-                # E-step
-                # Choose models for objects with gives minimal value to |x * w|
-                algo = Irls(None, None, self.__weights)
-                self.__object_model = abs(algo.get_linear_regression(self.__objects)).argmin(1)
+            # E-step
+            # Choose models for objects with gives minimal value to |x * w|
+            algo = Irls(None, None, self.__weights)
+            self.__object_model = abs(algo.get_linear_regression(self.__objects)).argmin(1)
 
     def classify(self, objects):
         objects = np.asmatrix(objects)
@@ -227,6 +227,26 @@ class EmIrls(object):
         return labels
 
     def get_weights(self): return self.__weights
+
+
+class WeightedLeastSquare:
+    def __init__(self, objects, labels):
+        self.__objects = np.asmatrix(objects)
+        self.__labels = np.asmatrix(labels)
+        self.__weights = np.empty([self.__objects.shape[1], 1])
+
+    def train(self, object_weights=None, regularizator=None):
+        if object_weights:
+            weight_matrix = np.asmatrix(np.diag(self.__object_weights))
+            self.__weights = (self.__objects.T * weight_matrix * self.__objects)\
+                ** (-1) * self.__objects.T * weight_matrix * self.__labels
+        else:
+            self.__weights = (self.__objects.T * self.__objects) ** (-1)\
+                * self.__objects.T * self.__labels
+                                  
+
+    def regress(objects):
+        return np.asmatrix(objects) * self.__weights
 
 
 if __name__ == "__main__":
