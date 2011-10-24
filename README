@@ -1,0 +1,17 @@
+================
+Data Format:
+================
+Data is stored in tab separated file. First line is header with field names and
+types. Line begins from sharp and space (# ). Then follows label:label_type [field:type]
+
+----------------
+Possible scale(field) types:
+----------------
+lin
+bin
+nom
+rank
+
+Example:
+# label:nom     weight:lin      heigth:lin
+0	70	180  
