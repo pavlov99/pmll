@@ -1,4 +1,8 @@
 import numpy as np
+import scipy
+from scipy.io import loadmat
+from collections import namedtuple
+import itertools
 
 class ObjectFeatureMatrix(object):
     """
@@ -6,7 +10,7 @@ class ObjectFeatureMatrix(object):
     """
     def __init__(self, matrix=None):
         self.objects = None
-        self.nobjects = 0 
+        self.nobjects = 0
         self.nfeatures = None
 
         if matrix is not None:
@@ -20,7 +24,7 @@ class ObjectFeatureMatrix(object):
             self.objects = np.vstack([self.objects, matrix])
             self.nobjects += matrix.shape[0]
         else: # first add
-            self.objects = matrix 
+            self.objects = matrix
             self.nobjects, self.nfeatures = self.objects.shape
 
     def vif(self):
@@ -114,10 +118,10 @@ class ObjectFeatureMatrix(object):
         axHisty.set_ylim( axScatter.get_ylim() )
 
         plt.show()
-  
+
 
 class DataSet(object):
-    def __init__(self, objects=None, labels=None):        
+    def __init__(self, objects=None, labels=None):
         if (objects is None) ^ (labels is None):
             raise TypeError("Require zero or two arguments for input")
 
@@ -145,11 +149,11 @@ class DataSet(object):
             self.labels = np.vstack([self.labels, labels])
         self.objects.add(objects)
 
-    def get_number_objects(self): 
+    def get_number_objects(self):
         return self.objects.nobjects
     nobjects = property(get_number_objects, doc="return number of objects")
 
-    def get_number_features(self): 
+    def get_number_features(self):
         return self.objects.nfeatures
     nfeatures = property(get_number_features, doc="return number of features")
 
@@ -173,7 +177,7 @@ class DataSet(object):
         # axScatter.set_aspect(1.) # square image
 
         for index, uniq_label in enumerate(uniq_labels):
-            plt.plot(x[labels == uniq_label], y[labels == uniq_label], 
+            plt.plot(x[labels == uniq_label], y[labels == uniq_label],
                 '%so' % COLORS[index])
 
         # define picture size
@@ -218,6 +222,71 @@ class DataSet(object):
 
         # plt.draw()
         plt.show()
+
+Field = namedtuple('Field', 'name type')
+
+class Data(object):
+    """
+    fields = list<field>
+    field = (field name, field type), namedtuple
+    """
+    def __init__(self, objects, labels=None, fields=None):
+        self.objects = np.matrix(objects)
+        self.labels = np.matrix(labels) if labels is not None else np.zeros((objects.shape[0], 1))
+        self.fields = fields
+
+        assert self.labels.shape[1] == 1, "size of labels must be (m x 1)"
+
+    def get_number_objects(self):
+        return self.objects.shape[0]
+    nobjects = property(get_number_objects, doc="return number of objects")
+
+    def get_number_features(self):
+        return self.objects.shape[1]
+    nfeatures = property(get_number_features, doc="return number of features")
+
+    def get_vif(self):
+        assert self.nfeatures > 1
+
+        def _regression_residuals(x, y):
+            """
+            Calculate regression residuals:
+            y - x * (x' * x)^(-1) * x' * y;
+            Input:
+                x - array(l, n)
+                y - array(l, 1)
+            Output:
+                residuals y - x*w - array(l, 1)
+            """
+            return np.asarray(y - x * (x.T * x)**(-1) * x.T * y)
+
+        vif = [0] * self.nfeatures
+        for i in range(self.nfeatures):
+            rows = range(i) + range(i + 1, self.nfeatures)
+            vif[i] = float(sum(
+                    np.asarray(self.objects[:, i] -
+                               np.mean(self.objects[:, i])) ** 2) /
+                    sum(_regression_residuals(self.objects[:, rows],
+                                              self.objects[:, i]) ** 2)
+                           )
+        return vif
+
+
+class DataReader(object):
+    def read(self, stream, separator="\t"):
+        """ read csv """
+        header = itertools.islice(stream, 1)
+        fields = [Field(field.split(':')[0], field.split(':')[1]) for field in header.split('\t')]
+
+        data_matrix = scipy.io.read_array(stream,
+                                          separator="\t",
+                                          comment = '#',
+                                          )
+
+        data = Data(data_matrix[:,1:],
+                    labels=data_matrix[:,0][:,np.newaxis],
+                    fields=fields)
+        return data
 
 
 if __name__ == "__main__":
