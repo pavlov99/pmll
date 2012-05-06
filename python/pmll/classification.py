@@ -60,17 +60,30 @@ class IrlsModel(object):
     def __init__(self, weights=None):
         # 'weights' are used for 1) init weights 2) create model
         self.weights = weights
-        self.__history = {'weights': self.weights}
 
     @staticmethod
     def __logit(z):
         return 1 / (1 + np.exp(-z))
+
+    @staticmethod
+    def __get_weights(size, min_weight=None, max_weight=None):
+        """
+        Return initial values for weights. By default w \in [-1/2n, 1/2n]
+        where n = size. It is possible to define min and max values for
+        weights
+        """
+        a = min_weight or -0.5 / size
+        b = max_weight or 0.5 / size
+        return np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
 
     def __init_weights(self, size):
         pass
 
     def train(self, objects, labels, max_iterations=100, accuracy=1e-5,
               regularization_parameter=1e-5):
+
+        self.__history = {'weights': self.weights}
+
         objects = np.hstack([
                 objects,
                 np.ones([objects.shape[0], 1]),
@@ -135,6 +148,27 @@ class TestIrlsModel(unittest.TestCase):
         logit = lambda x: IrlsModel._IrlsModel__logit(x)
         self.assertEqual(logit(0), 0.5)
 
+    def test__get_weights(self):
+        size = np.random.randint(1, high=100)
+        min_weight, max_weight = sorted(np.random.rand(2))
+
+        weights = IrlsModel._IrlsModel__get_weights(
+            size, min_weight, max_weight)
+
+        self.assertIsInstance(weights, np.matrix)
+        self.assertTrue((min_weight <= weights).all())
+        self.assertTrue((weights < max_weight).all())
+        self.assertEqual(weights.shape, (size, 1))
+
+    def test__get_weights_default(self):
+        size = 1000
+        min_weight, max_weight = -0.5 / size, 0.5 / size
+        weights = IrlsModel._IrlsModel__get_weights(size)
+
+        self.assertIsInstance(weights, np.matrix)
+        self.assertTrue((min_weight <= weights).all())
+        self.assertTrue((weights < max_weight).all())
+        self.assertEqual(weights.shape, (size, 1))
 
 
 class TestIrlsClassifier(unittest.TestCase):
