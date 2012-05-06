@@ -82,13 +82,16 @@ class IrlsModel(object):
     def train(self, objects, labels, max_iterations=100, accuracy=1e-5,
               regularization_parameter=1e-5):
 
-        self.__history = {'weights': self.weights}
-
+        # change types of lobjects and labels to np.matrix
         objects = np.hstack([
                 objects,
                 np.ones([objects.shape[0], 1]),
                 ])
         labels = np.asmatrix(labels)
+
+        # Initialize weights
+        self.weights = self.weights self.__get_weights(objects.shape[1])
+        self.__history = {'weights': self.weights}
 
 
 class IrlsClassifier(object):
