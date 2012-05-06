@@ -9,11 +9,17 @@ class LinearRegressionLeastSquaresModel(object):
         pass
 
     @staticmethod
-    def get_weights(objects, labels):
+    def get_weights(objects, labels, object_weights=None):
         """
-        w = (X' * X) ^ {-1} * X' * y
+        w = (X' * W * X) ^ {-1} * X' * W * y
         """
-        pass
+        X = np.asmatrix(objects)
+        y = np.asmatrix(labels)
+        if object_weights is None:
+            return (X.T * X).I * X.T * y
+        else:
+            W = np.diagflat(object_weights)
+            return (X.T * W * X).I * X.T * W * y
 
     def get_regression_residuals(objects, labels):
         """
@@ -109,7 +115,17 @@ class IrlsClassifier(object):
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
     def setUp(self):
-        pass
+        nobjects, nfeatures = 3, 5
+        self.objects = np.random.rand(3,2)
+        self.labels = [[0], [1], [2]]
+        self.object_weights = [[1], [0], [0]]
+        self.feature_weights = [[0], [1]]
+
+    def test_get_weights(self):
+        weights = LinearRegressionLeastSquaresModel.get_weights(
+            self.objects, self.labels)
+
+        print weights
 
 
 class TestLinearRegression(unittest.TestCase):
