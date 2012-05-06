@@ -13,13 +13,30 @@ class LinearRegressionLeastSquares(object):
     @staticmethod
     def get_regression(objects, weights):
         """
-        Return np.matrix objects
+        Ret linear regression
+        Input:
+            objects - matrix (also X), representation of objects
+            weights - vector (also w)
+
+        Output:
+            X * w
         """
+        return np.asmatrix(objects) * weights
+
+    @classmethod
+    def get_regression1(cls, objects, weights):
+        """
+        Return np.matrix objects
+
+        Output:
+            [X, 1] * w
+       """
         modified_objects = np.column_stack((
                 objects,
                 np.ones([objects.shape[0], 1]),
                 ))
-        return np.asmatrix(modified_objects) * weights
+        return cls.get_regression(modified_objects, weights)
+
 
 class IrlsModel(object):
     """
@@ -53,38 +70,38 @@ class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
 
 
 class TestLinearRegressionLeastSquares(unittest.TestCase):
-    def test_get_regression_array_array(self):
+    def test_get_regression1_array_array(self):
         objects = np.random.rand(3,2)
         weights = np.random.rand(3,1)
-        output = LinearRegressionLeastSquares.get_regression(objects, weights)
+        output = LinearRegressionLeastSquares.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
-    def test_get_regression_array_matrix(self):
+    def test_get_regression1_array_matrix(self):
         objects = np.random.rand(3,2)
         weights = np.matrix(np.random.rand(3,1))
-        output = LinearRegressionLeastSquares.get_regression(objects, weights)
+        output = LinearRegressionLeastSquares.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
-    def test_get_regression_array_list(self):
+    def test_get_regression1_array_list(self):
         objects = np.random.rand(3,2)
         # list of arrays
         weights = list(np.random.rand(3,1))
-        output = LinearRegressionLeastSquares.get_regression(objects, weights)
+        output = LinearRegressionLeastSquares.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
         # list. Note, that it has to be list of lists: [[1], [2]] = column
         weights = [[float(w)] for w in weights]
-        output = LinearRegressionLeastSquares.get_regression(objects, weights)
+        output = LinearRegressionLeastSquares.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
-    def test_get_regression_matrix_array(self):
+    def test_get_regression1_matrix_array(self):
         objects = np.matrix(np.random.rand(3,2))
         weights = np.random.rand(3,1)
-        output = LinearRegressionLeastSquares.get_regression(objects, weights)
+        output = LinearRegressionLeastSquares.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
