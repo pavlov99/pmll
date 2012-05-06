@@ -96,7 +96,7 @@ class IrlsModel(object):
         labels = np.asmatrix(labels)
 
         # Initialize weights
-        self.weights = self.weights self.__get_weights(objects.shape[1])
+        self.weights = self.weights or self.__get_weights(objects.shape[1])
         self.__history = {'weights': self.weights}
 
 
@@ -124,8 +124,15 @@ class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
     def test_get_weights(self):
         weights = LinearRegressionLeastSquaresModel.get_weights(
             self.objects, self.labels)
+        self.assertIsInstance(weights, np.matrix)
+        self.assertEqual(weights.shape, (2, 1))
 
-        print weights
+    def test_get_weights_objects(self):
+        weights = LinearRegressionLeastSquaresModel.get_weights(
+            self.objects, self.labels, self.object_weights)
+        self.assertIsInstance(weights, np.matrix)
+        self.assertEqual(weights.shape, (2, 1))
+        self.assertTrue((weights == np.matrix([[0], [0]])).all())
 
 
 class TestLinearRegression(unittest.TestCase):
@@ -133,8 +140,8 @@ class TestLinearRegression(unittest.TestCase):
         objects = np.random.rand(3,2)
         weights = np.random.rand(3,1)
         output = LinearRegression.get_regression1(objects, weights)
-        self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
+        self.assertEqual(output.shape, (3, 1))
 
     def test_get_regression1_array_matrix(self):
         objects = np.random.rand(3,2)
