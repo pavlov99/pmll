@@ -99,7 +99,9 @@ class IrlsClassifier(object):
         self.model = model
 
     def classify(self, objects):
-        return LinearRegression.get_regression1(objects, self.model.weights)
+        weights = self.model.weights or\
+            IrlsModel._IrlsModel__get_weights(np.asmatrix(objects).shape[1] + 1)
+        return LinearRegression.get_regression1(objects, weights)
 
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
@@ -184,6 +186,14 @@ class TestIrlsClassifier(unittest.TestCase):
         labels = classifier.classify(objects)
         self.assertIsInstance(labels, np.matrix)
         self.assertEqual(labels.all(), predicted_labels.all())
+
+    def test_classify_default_model(self):
+        objects = [[0], [1]]
+        model = IrlsModel()
+        classifier = IrlsClassifier(model)
+        labels = classifier.classify(objects)
+        self.assertIsInstance(labels, np.matrix)
+
 
 if __name__ == '__main__':
     unittest.main()
