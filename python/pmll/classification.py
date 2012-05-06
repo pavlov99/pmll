@@ -108,9 +108,14 @@ class IrlsClassifier(object):
         self.model = model
 
     def classify(self, objects):
-        weights = self.model.weights or\
-            IrlsModel._IrlsModel__get_weights(np.asmatrix(objects).shape[1] + 1)
-        return LinearRegression.get_regression1(objects, weights)
+        if self.model.weights is None:
+            weights = IrlsModel._IrlsModel__get_weights(
+                np.asmatrix(objects).shape[1] + 1)
+        else:
+            weights = self.model.weights
+
+        logit = lambda z: IrlsModel._IrlsModel__logit(z)
+        return logit(LinearRegression.get_regression1(objects, weights))
 
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
@@ -203,15 +208,25 @@ class TestIrlsClassifier(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_classify_answer_interval(self):
+        nobjects, nfeatures = 1000, 3
+        objects = np.random.rand(nobjects, nfeatures)
+        weights = np.random.rand(nfeatures + 1, 1)
+        classifier = IrlsClassifier(IrlsModel(weights))
+        labels = classifier.classify(objects)
+        self.assertIsInstance(labels, np.matrix)
+        self.assertTrue((labels <= 1).all())
+        self.assertTrue((labels >= 0).all())
+
     def test_classify_existing_model(self):
-        objects = [[0], [1]]
-        weights = [[1], [2]]
-        predicted_labels = np.matrix([[2], [3]])
+        objects = [[0], [2]]
+        weights = [[1], [-1]]
         model = IrlsModel(weights)
         classifier = IrlsClassifier(model)
         labels = classifier.classify(objects)
         self.assertIsInstance(labels, np.matrix)
-        self.assertEqual(labels.all(), predicted_labels.all())
+        self.assertTrue(float(labels[0]) < 0.5)
+        self.assertTrue(float(labels[1]) > 0.5)
 
     def test_classify_default_model(self):
         objects = [[0], [1]]
