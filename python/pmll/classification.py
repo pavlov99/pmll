@@ -85,24 +85,44 @@ class IrlsModel(object):
         b = max_weight or 0.5 / size
         return np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
 
-    def train(self, objects, labels, object_weights=None, max_iterations=100,
-              accuracy=1e-5, regularization_parameter=1e-5):
+    def __is_stop(self, vector1, vector2, accuracy):
+        return sum(abs(vector1 - vector2)) < accuracy
+
+    def train(self, objects, labels, object_weights=None, max_iterations=1,
+              accuracy=1e-5, regularization=1e-5):
 
         # change types of lobjects and labels to np.matrix
-        objects = np.asmatrix(objects)
+        # objects = wide objects [X, 1]
+        objects = np.asmatrix(np.column_stack((
+                objects,
+                np.ones([objects.shape[0], 1]),
+                )))
         labels = np.asmatrix(labels)
         object_weights = object_weights or np.array([[1]] * objects.shape[0])
 
         # Initialize weights
-        self.weights = self.weights or self.__get_weights(objects.shape[1] + 1)
-        self.__history = {'weights': self.weights}
+        self.weights = self.weights or self.__get_weights(objects.shape[1])
+        self.__history = {'weights': [self.weights]}
         for iteration in range(max_iterations):
             classifier = IrlsClassifier(self)
-            probability = classifier.classify(objects)
+            probability = classifier.classify(objects[:, :-1])
             object_weights_new = np.multiply(
                 probability - np.power(probability, 2),
                 object_weights,
                 )
+
+            self.weights = self.weights -\
+                LinearRegressionLeastSquaresModel.get_weights(
+                objects,
+                probability - labels,
+                object_weights=object_weights_new,
+                regularization=regularization,
+                )
+
+            self.__history['weights'].append(self.weights)
+            if self.__is_stop(self.weights, self.__history['weights'][-2],
+                              accuracy):
+                break
 
 
 class IrlsClassifier(object):
