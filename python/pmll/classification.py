@@ -40,7 +40,9 @@ class LinearRegression(object):
         Output:
             X * w
         """
-        return np.asmatrix(objects) * weights
+        # print "bjects", type(np.asmatrix(objects)), np.asmatrix(objects)
+        # print "w", type(weights), weights
+        return np.asmatrix(objects) * np.asmatrix(weights)
 
     @classmethod
     def get_regression1(cls, objects, weights):
@@ -85,19 +87,24 @@ class IrlsModel(object):
     def __init_weights(self, size):
         pass
 
-    def train(self, objects, labels, max_iterations=100, accuracy=1e-5,
-              regularization_parameter=1e-5):
+    def train(self, objects, labels, object_weights=None, max_iterations=100,
+              accuracy=1e-5, regularization_parameter=1e-5):
 
         # change types of lobjects and labels to np.matrix
-        objects = np.hstack([
-                objects,
-                np.ones([objects.shape[0], 1]),
-                ])
+        objects = np.asmatrix(objects)
         labels = np.asmatrix(labels)
+        object_weights = object_weights or np.array([[1]] * objects.shape[0])
 
         # Initialize weights
-        self.weights = self.weights or self.__get_weights(objects.shape[1])
+        self.weights = self.weights or self.__get_weights(objects.shape[1] + 1)
         self.__history = {'weights': self.weights}
+        for iteration in range(max_iterations):
+            classifier = IrlsClassifier(self)
+            probability = classifier.classify(objects)
+            object_weights_new = np.multiply(
+                probability - np.power(probability, 2),
+                object_weights,
+                )
 
 
 class IrlsClassifier(object):
@@ -177,6 +184,11 @@ class TestLinearRegression(unittest.TestCase):
         self.assertIsInstance(output, np.matrix)
 
 class TestIrlsModel(unittest.TestCase):
+    def setUp(self):
+        nobjects, nfeatures = 10, 2
+        self.objects = np.random.rand(nobjects, nfeatures)
+        self.labels = np.asmatrix(np.random.randint(0, 2, nobjects)).T
+
     def test__logit(self):
         logit = lambda x: IrlsModel._IrlsModel__logit(x)
         self.assertEqual(logit(0), 0.5)
@@ -203,6 +215,9 @@ class TestIrlsModel(unittest.TestCase):
         self.assertTrue((weights < max_weight).all())
         self.assertEqual(weights.shape, (size, 1))
 
+    def test_train(self):
+        model = IrlsModel()
+        model.train(self.objects, self.labels)
 
 class TestIrlsClassifier(unittest.TestCase):
     def setUp(self):
