@@ -84,9 +84,6 @@ class IrlsModel(object):
         b = max_weight or 0.5 / size
         return np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
 
-    def __init_weights(self, size):
-        pass
-
     def train(self, objects, labels, object_weights=None, max_iterations=100,
               accuracy=1e-5, regularization_parameter=1e-5):
 
