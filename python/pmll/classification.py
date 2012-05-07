@@ -9,17 +9,18 @@ class LinearRegressionLeastSquaresModel(object):
         pass
 
     @staticmethod
-    def get_weights(objects, labels, object_weights=None):
+    def get_weights(objects, labels, object_weights=None, regularization=0):
         """
         w = (X' * W * X) ^ {-1} * X' * W * y
         """
         X = np.asmatrix(objects)
         y = np.asmatrix(labels)
+        I = regularization * np.eye(objects.shape[1]) # FIXIT other reg-s ?
         if object_weights is None:
-            return (X.T * X).I * X.T * y
+            return (X.T * X + I).I * X.T * y
         else:
             W = np.diagflat(object_weights)
-            return (X.T * W * X).I * X.T * W * y
+            return (X.T * W * X + I).I * X.T * W * y
 
     def get_regression_residuals(objects, labels):
         """
@@ -142,6 +143,18 @@ class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
         self.assertIsInstance(weights, np.matrix)
         self.assertEqual(weights.shape, (2, 1))
         self.assertTrue((weights == np.matrix([[0], [0]])).all())
+
+    def test_get_weights_lin_dependency(self):
+        objects = np.tile(self.objects[:,0][:,np.newaxis], (1, 2))
+
+        print objects
+
+        with self.assertRaises(np.linalg.LinAlgError):
+            LinearRegressionLeastSquaresModel.get_weights(objects, self.labels)
+
+        weights = LinearRegressionLeastSquaresModel.get_weights(
+            objects, self.labels, regularization=1)
+        self.assertEqual((weights == weights[0,0]).all())
 
 
 class TestLinearRegression(unittest.TestCase):
