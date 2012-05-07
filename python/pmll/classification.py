@@ -88,7 +88,7 @@ class IrlsModel(object):
     def __is_stop(self, vector1, vector2, accuracy):
         return sum(abs(vector1 - vector2)) < accuracy
 
-    def train(self, objects, labels, object_weights=None, max_iterations=1,
+    def train(self, objects, labels, object_weights=None, max_iterations=100,
               accuracy=1e-5, regularization=1e-5):
 
         # change types of lobjects and labels to np.matrix
