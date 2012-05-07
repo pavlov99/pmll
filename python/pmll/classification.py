@@ -145,16 +145,12 @@ class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
         self.assertTrue((weights == np.matrix([[0], [0]])).all())
 
     def test_get_weights_lin_dependency(self):
-        objects = np.tile(self.objects[:,0][:,np.newaxis], (1, 2))
-
-        print objects
-
+        objects = np.matrix([[1, 1], [2, 2], [3, 3]])
         with self.assertRaises(np.linalg.LinAlgError):
             LinearRegressionLeastSquaresModel.get_weights(objects, self.labels)
 
-        weights = LinearRegressionLeastSquaresModel.get_weights(
+        LinearRegressionLeastSquaresModel.get_weights(
             objects, self.labels, regularization=1)
-        self.assertEqual((weights == weights[0,0]).all())
 
 
 class TestLinearRegression(unittest.TestCase):
