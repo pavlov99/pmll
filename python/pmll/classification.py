@@ -212,8 +212,8 @@ class TestLinearRegression(unittest.TestCase):
         self.assertEqual(output.shape, (3, 1))
 
     def test_get_regression1_array_matrix(self):
-        objects = np.random.rand(3,2)
-        weights = np.matrix(np.random.rand(3,1))
+        objects = np.random.rand(3, 2)
+        weights = np.matrix(np.random.rand(3, 1))
         output = LinearRegression.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
