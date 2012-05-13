@@ -71,6 +71,10 @@ class IrlsModel(object):
         # 'weights' are used for 1) init weights 2) create model
         self.weights = weights
 
+    def __get_classifier(self):
+        return IrlsClassifier(self)
+    classifier = property(__get_classifier)
+
     @staticmethod
     def __logit(z):
         return 1 / (1 + np.exp(-z))
@@ -111,7 +115,8 @@ class IrlsModel(object):
         I = regularization * np.eye(objects.shape[1])
 
         # Initialize weights
-        self.weights = self.weights or self.__get_weights(objects.shape[1])
+        if self.weights is None:
+            self.weights = self.__get_weights(objects.shape[1])
         self.__history = {'weights': [self.weights], 'weight_change': []}
 
         for iteration in range(max_iterations):
@@ -155,22 +160,70 @@ class IrlsClassifier(object):
 
 
 class ModelMixtureModel(object):
-    def __init__(self, weights=None, number_models=None):
-        self.weights = weights
-        if weights is not None:
-            self.number_models = weights.shape[1]
+    def __init__(self, models):
+        self.models = models
+        self.model_prior_probability = self.__normalize_rows(
+            np.random.random([1, len(self.models)]))
 
-    def train(self, objects, labels, number_models, object_weights=None,
+    @staticmethod
+    def __normalize_rows(matrix):
+        matrix = np.asmatrix(matrix)
+        return np.diag(list((1.0 / matrix.sum(1)).flat)) * matrix
+
+    def __get_classifier(self):
+        return ModelMixtureClassifier(self)
+    classifier = property(__get_classifier)
+
+    def train(self, objects, labels, object_weights=None,
               max_iterations=100, accuracy=1e-5, regularization=1e-5):
-        pass
+
+        self.model_object_probability = np.tile(
+            self.model_prior_probability,
+            (objects.shape[0], 1),
+            )
+
+        for iteration in range(max_iterations):
+            # print "%s Iteration:\t%s" % (self.__class__, iteration)
+
+            # M-step (train algorithms)
+            self.model_prior_probability =\
+                self.model_object_probability.mean(0)
+            for index, model in enumerate(self.models):
+                object_weights = self.model_object_probability[:, index]
+                self.models[index].train(objects, labels,
+                                         object_weights=object_weights)
+
+            # E-Step
+            self.model_object_probability =\
+                self.classifier._get_model_object_probability(objects)
 
 
 class ModelMixtureClassifier(object):
     def __init__(self, model):
         self.model = model
 
+    @staticmethod
+    def __normalize_rows(matrix):
+        matrix = np.asmatrix(matrix)
+        return np.diag(list((1.0 / matrix.sum(1)).flat)) * matrix
+
+    def _get_model_object_probability(self, objects, normalize=True):
+        """
+        Return probability of models for each object
+        """
+        probabilities = np.hstack((model.classifier.classify(objects)
+                                   for model in self.model.models))
+
+        model_object_probability = probabilities *\
+            np.diagflat(self.model.model_prior_probability)
+
+        if normalize:
+            return self.__normalize_rows(model_object_probability)
+        else:
+            return model_object_probability
+
     def classify(self, objects):
-        pass
+        return self._get_model_object_probability(objects, False).sum(1)
 
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
