@@ -105,7 +105,8 @@ class IrlsModel(object):
                 np.ones([objects.shape[0], 1]),
                 )))
         labels = np.asmatrix(labels)
-        object_weights = object_weights or np.array([[1]] * objects.shape[0])
+        if object_weights is None:
+            object_weights = np.array([[1]] * objects.shape[0])
         I = regularization * np.eye(objects.shape[1])
 
         # Initialize weights
@@ -117,7 +118,7 @@ class IrlsModel(object):
             probability = classifier.classify(objects[:, :-1])
             object_weights_new = np.multiply(
                 probability - np.power(probability, 2),
-                object_weights or np.array([[1]] * objects.shape[0]),
+                object_weights,
                 )
 
             X = objects
