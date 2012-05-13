@@ -154,10 +154,14 @@ class IrlsClassifier(object):
 
 
 class ModelMixtureModel(object):
-    def __init__(self, weights=None):
-        # 'weights' are used for 1) init weights 2) create model
+    def __init__(self, weights=None, number_models=None):
         self.weights = weights
+        if weights is not None:
+            self.number_models = weights.shape[1]
 
+    def train(self, objects, labels, number_models, object_weights=None,
+              max_iterations=100, accuracy=1e-5, regularization=1e-5):
+        pass
 
 class ModelMixtureClassifier(object):
     def __init__(self, model):
