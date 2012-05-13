@@ -176,7 +176,7 @@ class ModelMixtureClassifier(object):
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
     def setUp(self):
         nobjects, nfeatures = 3, 5
-        self.objects = np.random.rand(3,2)
+        self.objects = np.random.rand(3, 2)
         self.labels = [[0], [1], [2]]
         self.object_weights = [[1], [0], [0]]
         self.feature_weights = [[0], [1]]
@@ -205,8 +205,8 @@ class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
 
 class TestLinearRegression(unittest.TestCase):
     def test_get_regression1_array_array(self):
-        objects = np.random.rand(3,2)
-        weights = np.random.rand(3,1)
+        objects = np.random.rand(3, 2)
+        weights = np.random.rand(3, 1)
         output = LinearRegression.get_regression1(objects, weights)
         self.assertIsInstance(output, np.matrix)
         self.assertEqual(output.shape, (3, 1))
@@ -219,9 +219,9 @@ class TestLinearRegression(unittest.TestCase):
         self.assertIsInstance(output, np.matrix)
 
     def test_get_regression1_array_list(self):
-        objects = np.random.rand(3,2)
+        objects = np.random.rand(3, 2)
         # list of arrays
-        weights = list(np.random.rand(3,1))
+        weights = list(np.random.rand(3, 1))
         output = LinearRegression.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
@@ -233,8 +233,8 @@ class TestLinearRegression(unittest.TestCase):
         self.assertIsInstance(output, np.matrix)
 
     def test_get_regression1_matrix_array(self):
-        objects = np.matrix(np.random.rand(3,2))
-        weights = np.random.rand(3,1)
+        objects = np.matrix(np.random.rand(3, 2))
+        weights = np.random.rand(3, 1)
         output = LinearRegression.get_regression1(objects, weights)
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
