@@ -1,6 +1,7 @@
 import numpy as np
 import unittest
 
+
 class LinearRegressionLeastSquaresModel(object):
     def __init__(self, weights=None):
         self.weights = weights
@@ -163,6 +164,7 @@ class ModelMixtureModel(object):
               max_iterations=100, accuracy=1e-5, regularization=1e-5):
         pass
 
+
 class ModelMixtureClassifier(object):
     def __init__(self, model):
         self.model = model
@@ -237,6 +239,7 @@ class TestLinearRegression(unittest.TestCase):
         self.assertEqual(output.shape, (3, 1))
         self.assertIsInstance(output, np.matrix)
 
+
 class TestIrlsModel(unittest.TestCase):
     def setUp(self):
         nobjects, nfeatures = 10, 2
@@ -272,6 +275,7 @@ class TestIrlsModel(unittest.TestCase):
     def test_train(self):
         model = IrlsModel()
         model.train(self.objects, self.labels)
+
 
 class TestIrlsClassifier(unittest.TestCase):
     def setUp(self):
