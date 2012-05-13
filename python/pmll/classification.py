@@ -5,7 +5,7 @@ class LinearRegressionLeastSquaresModel(object):
     def __init__(self, weights=None):
         self.weights = weights
 
-    def train(self, objects):
+    def train(self, objects, labels):
         pass
 
     @staticmethod
@@ -85,8 +85,15 @@ class IrlsModel(object):
         b = max_weight or 0.5 / size
         return np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
 
-    def __is_stop(self, vector1, vector2, accuracy):
-        return sum(abs(vector1 - vector2)) < accuracy
+    @staticmethod
+    def __get_change(vector1, vector2, norm="inf"):
+        if norm == "inf":
+            return float(sum(abs(vector1 - vector2)))
+        if norm == "0":
+            return abs(vector1 - vector2).max()
+
+    def __is_stop(self, accuracy):
+        return self.__history['weight_change'][-1] < accuracy
 
     def train(self, objects, labels, object_weights=None, max_iterations=100,
               accuracy=1e-5, regularization=1e-5):
@@ -99,29 +106,31 @@ class IrlsModel(object):
                 )))
         labels = np.asmatrix(labels)
         object_weights = object_weights or np.array([[1]] * objects.shape[0])
+        I = regularization * np.eye(objects.shape[1])
 
         # Initialize weights
         self.weights = self.weights or self.__get_weights(objects.shape[1])
-        self.__history = {'weights': [self.weights]}
+        self.__history = {'weights': [self.weights], 'weight_change': []}
+
         for iteration in range(max_iterations):
             classifier = IrlsClassifier(self)
             probability = classifier.classify(objects[:, :-1])
             object_weights_new = np.multiply(
                 probability - np.power(probability, 2),
-                object_weights,
+                object_weights or np.array([[1]] * objects.shape[0]),
                 )
 
-            self.weights = self.weights -\
-                LinearRegressionLeastSquaresModel.get_weights(
-                objects,
-                probability - labels,
-                object_weights=object_weights_new,
-                regularization=regularization,
-                )
+            X = objects
+            y = np.asmatrix(probability - labels)
+            W = np.diagflat(object_weights_new)
 
+            self.weights = self.weights - (X.T * W * X + I).I * X.T * y
             self.__history['weights'].append(self.weights)
-            if self.__is_stop(self.weights, self.__history['weights'][-2],
-                              accuracy):
+            self.__history['weight_change'].append(self.__get_change(
+                    self.__history['weights'][-2],
+                    self.__history['weights'][-1]))
+
+            if self.__is_stop(accuracy):
                 break
 
 
@@ -141,6 +150,20 @@ class IrlsClassifier(object):
 
         logit = lambda z: IrlsModel._IrlsModel__logit(z)
         return logit(LinearRegression.get_regression1(objects, weights))
+
+
+class ModelMixtureModel(object):
+    def __init__(self, weights=None):
+        # 'weights' are used for 1) init weights 2) create model
+        self.weights = weights
+
+
+class ModelMixtureClassifier(object):
+    def __init__(self, model):
+        self.model = model
+
+    def classify(self, objects):
+        pass
 
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
