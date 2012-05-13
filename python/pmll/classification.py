@@ -16,7 +16,7 @@ class LinearRegressionLeastSquaresModel(object):
         """
         X = np.asmatrix(objects)
         y = np.asmatrix(labels)
-        I = regularization * np.eye(objects.shape[1]) # FIXIT other reg-s ?
+        I = regularization * np.eye(objects.shape[1])  # FIXIT other reg-s ?
         if object_weights is None:
             return (X.T * X + I).I * X.T * y
         else:
