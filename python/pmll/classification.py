@@ -100,7 +100,7 @@ class IrlsModel(object):
     def __is_stop(self, accuracy):
         return self.__history['weight_change'][-1] < accuracy
 
-    def train(self, objects, labels, object_weights=None, max_iterations=100,
+    def train(self, objects, labels, object_weights=None, max_iterations=20,
               accuracy=1e-5, regularization=1e-5):
 
         # change types of lobjects and labels to np.matrix
@@ -175,19 +175,37 @@ class ModelMixtureModel(object):
     classifier = property(__get_classifier)
 
     def train(self, objects, labels, object_weights=None,
-              max_iterations=100, accuracy=1e-5, regularization=1e-5):
+              max_iterations=100, accuracy=1e-5, regularization=1e-5,
+              min_model_probability=1e-4):
 
         self.model_object_probability = np.tile(
             self.model_prior_probability,
             (objects.shape[0], 1),
             )
 
+        print "%s Iteration:\t" % (self.__class__, )
         for iteration in range(max_iterations):
-            # print "%s Iteration:\t%s" % (self.__class__, iteration)
+            print iteration,
 
             # M-step (train algorithms)
             self.model_prior_probability =\
                 self.model_object_probability.mean(0)
+
+            model_prior_probability = []
+            models = []
+
+            for p, model in zip(self.model_prior_probability.flat,
+                                self.models):
+                print p, model
+                if float(p) > min_model_probability:
+                    model_prior_probability.append(p)
+                    models.append(model)
+
+            self.models = models
+            self.model_prior_probability = model_prior_probability
+
+            print self.models, self.model_prior_probability
+
             for index, model in enumerate(self.models):
                 object_weights = self.model_object_probability[:, index]
                 self.models[index].train(objects, labels,
