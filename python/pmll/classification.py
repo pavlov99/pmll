@@ -1,4 +1,6 @@
 import numpy as np
+from scipy import optimize
+import time
 import unittest
 
 
@@ -21,6 +23,8 @@ class LinearRegressionLeastSquaresModel(object):
             return (X.T * X + I).I * X.T * y
         else:
             W = np.diagflat(object_weights)
+            print W
+            print I
             return (X.T * W * X + I).I * X.T * W * y
 
     def get_regression_residuals(objects, labels):
@@ -62,6 +66,117 @@ class LinearRegression(object):
         return cls.get_regression(modified_objects, weights)
 
 
+class LogisticRegressionGradientModel(object):
+    """
+    Logistic regression with gradient method of learning
+    """
+
+    def __init__(self, weights=None):
+        self.weights = weights
+
+    @staticmethod
+    def __logit(z):
+        return 1 / (1 + np.exp(-z))
+
+    def __get_classifier(self):
+        return IrlsClassifier(self)
+    classifier = property(__get_classifier)
+
+    @staticmethod
+    def __get_weights(size, min_weight=None, max_weight=None):
+        """
+        Return initial values for weights. By default w \in [-1/2n, 1/2n]
+        where n = size. It is possible to define min and max values for
+        weights
+        """
+        np.random.seed(seed=int(time.time()))
+        a = min_weight or -0.5 / size
+        b = max_weight or 0.5 / size
+        weights = np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
+        return weights
+
+    @staticmethod
+    def __get_change(vector1, vector2, norm="inf"):
+        if norm == "inf":
+            return float(sum(abs(vector1 - vector2)))
+        if norm == "0":
+            return abs(vector1 - vector2).max()
+
+    def get_quality(self, objects, labels):
+        return float(-sum(np.log(self.__logit(np.diagflat(labels) * objects *\
+                                                  self.weights))))
+
+    def get_quality2(self, objects, labels, weights):
+        weights = np.matrix(weights).T
+        return float(-sum(np.log(self.__logit(np.diagflat(labels) * objects *\
+                                                  weights))))
+
+    def train(self, objects, labels, max_iterations=20,
+              accuracy=1e-5, regularization=1e-5):
+
+        t = time.time()
+        # change types of lobjects and labels to np.matrix
+        # objects = wide objects [X, 1]
+        objects = np.asmatrix(np.column_stack((
+                objects,
+                np.ones([objects.shape[0], 1]),
+                )))
+        labels = np.asmatrix(labels)
+        # Initialize weights
+        if self.weights is None:
+            self.weights = self.__get_weights(objects.shape[1])
+        self.__history = {'weights': [self.weights], 'weight_change': []}
+
+        step = 10e-2
+        for iteration in range(max_iterations):
+            for object_, label in zip(objects, labels):
+                label_ = (2 * label - 1)
+                self.weights = self.weights +\
+                    float(step * label_ * self.__logit(-label_ * object_ *\
+                                                            self.weights)) *\
+                                                            object_.T
+
+            # print self.get_quality(objects, labels)
+            self.__history['weights'].append(self.weights)
+            self.__history['weight_change'].append(self.__get_change(
+                    self.__history['weights'][-2],
+                    self.__history['weights'][-1]))
+
+            # if self.__is_stop(accuracy):
+            #     break
+
+        self.time = time.time() - t
+
+    def train2(self, objects, labels, max_iterations=20, accuracy=1e-5,\
+                   regularization=1e-5):
+        t = time.time()
+        # change types of lobjects and labels to np.matrix
+        # objects = wide objects [X, 1]
+        objects = np.asmatrix(np.column_stack((
+                objects,
+                np.ones([objects.shape[0], 1]),
+                )))
+        labels = np.asmatrix(labels)
+        # Initialize weights
+        if self.weights is None:
+            self.weights = self.__get_weights(objects.shape[1])
+        self.__history = {'weights': [self.weights], 'weight_change': []}
+
+        # print objects
+        labels_ = (2 * labels - 1)
+
+        f = lambda w: self.get_quality2(objects, labels_, w)
+        weights_opt, history_weights = optimize.fmin_bfgs(
+            f, self.weights.T, gtol=1e-06, disp=0, retall=1)
+        for weight in history_weights:
+            self.__history['weights'].append(np.matrix(weight).T)
+            self.__history['weight_change'].append(self.__get_change(
+                    self.__history['weights'][-2],
+                    self.__history['weights'][-1]))
+        self.weights = np.matrix(weights_opt).T
+        self.time = time.time() - t
+
+
 class IrlsModel(object):
     """
     Iterative reweighted least squares regression model
@@ -86,9 +201,11 @@ class IrlsModel(object):
         where n = size. It is possible to define min and max values for
         weights
         """
+        np.random.seed(seed=int(time.time()))
         a = min_weight or -0.5 / size
         b = max_weight or 0.5 / size
-        return np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
+        weights = np.matrix((b - a) * np.random.random_sample((size, 1)) + a)
+        return weights
 
     @staticmethod
     def __get_change(vector1, vector2, norm="inf"):
@@ -103,6 +220,7 @@ class IrlsModel(object):
     def train(self, objects, labels, object_weights=None, max_iterations=20,
               accuracy=1e-5, regularization=1e-5):
 
+        t = time.time()
         # change types of lobjects and labels to np.matrix
         # objects = wide objects [X, 1]
         objects = np.asmatrix(np.column_stack((
@@ -140,6 +258,8 @@ class IrlsModel(object):
             if self.__is_stop(accuracy):
                 break
 
+        self.time = time.time() - t
+
 
 class IrlsClassifier(object):
     """
@@ -175,45 +295,65 @@ class ModelMixtureModel(object):
     classifier = property(__get_classifier)
 
     def train(self, objects, labels, object_weights=None,
-              max_iterations=100, accuracy=1e-5, regularization=1e-5,
-              min_model_probability=1e-4):
+              max_iterations=20, accuracy=1e-5, regularization=1e-5,
+              min_model_probability=1e-5):
 
+        t = time.time()
         self.model_object_probability = np.tile(
             self.model_prior_probability,
             (objects.shape[0], 1),
             )
 
-        print "%s Iteration:\t" % (self.__class__, )
+        # print "%s Iteration:\t" % (self.__class__, )
         for iteration in range(max_iterations):
-            print iteration,
+            if len(self.models) == 1:
+                self.time = time.time() - t
+                return
+
+            print iteration
 
             # M-step (train algorithms)
             self.model_prior_probability =\
                 self.model_object_probability.mean(0)
 
-            model_prior_probability = []
-            models = []
+            # model_prior_probability = []
+            # models = []
+            # model_object_probability = []
 
-            for p, model in zip(self.model_prior_probability.flat,
-                                self.models):
-                print p, model
-                if float(p) > min_model_probability:
-                    model_prior_probability.append(p)
-                    models.append(model)
+            # for index, model in enumerate(self.models):
+            #     p = self.model_prior_probability.flat[index]
+            #     if float(p) > min_model_probability:
+            #         model_prior_probability.append(p)
+            #         models.append(model)
+            #         model_object_probability.append(
+            #  self.model_object_probability[:, index])
 
-            self.models = models
-            self.model_prior_probability = model_prior_probability
-
-            print self.models, self.model_prior_probability
+            # self.models = models
+            # self.model_prior_probability = model_prior_probability
+            # self.model_object_probability = np.column_stack(
+            # model_object_probability)
 
             for index, model in enumerate(self.models):
                 object_weights = self.model_object_probability[:, index]
+                # print self.models[index].weights
+                # reset weights:
+                try:
+                    cond2 = abs(model.weights).min() > 1000.0 /\
+                        abs(objects).min()
+                except:
+                    cond2 = False
+                cond1 = self.models[index].weights is None
+                if not cond1 and cond2:
+                    self.models[index].weights = None
                 self.models[index].train(objects, labels,
                                          object_weights=object_weights)
+                # print self.models[index].weights
 
             # E-Step
             self.model_object_probability =\
                 self.classifier._get_model_object_probability(objects)
+
+        self.time = time.time() - t
 
 
 class ModelMixtureClassifier(object):
@@ -223,12 +363,15 @@ class ModelMixtureClassifier(object):
     @staticmethod
     def __normalize_rows(matrix):
         matrix = np.asmatrix(matrix)
+        # print matrix
+        # print matrix.sum(1)
         return np.diag(list((1.0 / matrix.sum(1)).flat)) * matrix
 
     def _get_model_object_probability(self, objects, normalize=True):
         """
         Return probability of models for each object
         """
+        # print self.model.models
         probabilities = np.hstack((model.classifier.classify(objects)
                                    for model in self.model.models))
 
