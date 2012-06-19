@@ -16,14 +16,14 @@ class BaseModel(object):
 
     def __init__(self):
         self.train_time = None
-        self.decorate_method('train')
+        self.__decorate_method('train')
 
-    def decorate_method(self, method_name):
+    def __decorate_method(self, method_name):
         """
         Decorate given method (change to decoreted):
           - calculate time.
         """
-        method = self.decorated_method(getattr(self, method_name))
+        method = getattr(self, method_name)
 
         def decorated_method(*args, **kwargs):
             # Decorate method: calculate time
