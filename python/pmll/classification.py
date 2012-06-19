@@ -15,7 +15,6 @@ class BaseModel(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
-        self.train_time = None
         self.__decorate_method('train')
 
     def __decorate_method(self, method_name):
