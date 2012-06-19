@@ -74,6 +74,10 @@ class EmIrls(object):
         algo = Irls(self.weights)
         return abs(algo.get_linear_regression(objects)).argmin(1)
 
+    def __get_classifier(self):
+        return self
+    classifier = property(__get_classifier)
+
     def train(self, objects, labels, number_iteration=20, verbosity=False):
         objects, labels = np.asmatrix(objects), np.asmatrix(labels)
         self.weights = np.empty([objects.shape[1] + 1, self.number_models])
