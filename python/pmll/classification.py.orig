@@ -3,6 +3,10 @@ from scipy import optimize
 import time
 import unittest
 
+import sys
+sys.path.append('..')
+import classification_orig
+
 
 class LinearRegressionLeastSquaresModel(object):
     def __init__(self, weights=None):
@@ -218,7 +222,7 @@ class IrlsModel(object):
         return self.__history['weight_change'][-1] < accuracy
 
     def train(self, objects, labels, object_weights=None, max_iterations=20,
-              accuracy=1e-5, regularization=1e-5):
+              accuracy=1e-5, g=None, regularization=1e-5):
 
         t = time.time()
         # change types of lobjects and labels to np.matrix
@@ -248,8 +252,12 @@ class IrlsModel(object):
             X = objects
             y = np.asmatrix(probability - labels)
             W = np.diagflat(object_weights_new)
+            if g is None:
+                G = np.asmatrix(np.eye(X.shape[0]))
+            else:
+                G = np.diagflat(g)
 
-            self.weights = self.weights - (X.T * W * X + I).I * X.T * y
+            self.weights = self.weights - (X.T * G * W * X + I).I * X.T * G * y
             self.__history['weights'].append(self.weights)
             self.__history['weight_change'].append(self.__get_change(
                     self.__history['weights'][-2],
@@ -278,6 +286,8 @@ class IrlsClassifier(object):
         logit = lambda z: IrlsModel._IrlsModel__logit(z)
         return logit(LinearRegression.get_regression1(objects, weights))
 
+EmIrlsModel = classification_orig.EmIrls
+# MM2Model = classification.ModelMixturer
 
 class ModelMixtureModel(object):
     def __init__(self, models):
@@ -295,8 +305,8 @@ class ModelMixtureModel(object):
     classifier = property(__get_classifier)
 
     def train(self, objects, labels, object_weights=None,
-              max_iterations=20, accuracy=1e-5, regularization=1e-5,
-              min_model_probability=1e-5):
+              max_iterations=10, accuracy=1e-5, regularization=1e-5,
+              min_model_probability=1e-7):
 
         t = time.time()
         self.model_object_probability = np.tile(
@@ -375,6 +385,8 @@ class ModelMixtureClassifier(object):
         probabilities = np.hstack((model.classifier.classify(objects)
                                    for model in self.model.models))
 
+        # print probabilities
+
         model_object_probability = probabilities *\
             np.diagflat(self.model.model_prior_probability)
 
@@ -385,6 +397,79 @@ class ModelMixtureClassifier(object):
 
     def classify(self, objects):
         return self._get_model_object_probability(objects, False).sum(1)
+
+
+class ModelMixture2Model(object):
+    def __init__(self, models):
+        self.models = models
+
+    @staticmethod
+    def __normalize_rows(matrix):
+        matrix = np.asmatrix(matrix)
+        return np.diag(list((1.0 / matrix.sum(1)).flat)) * matrix
+
+    def __get_classifier(self):
+        return ModelMixtureClassifier(self)
+    classifier = property(__get_classifier)
+
+    def train(self, objects, labels, object_weights=None, max_iterations=2,
+              accuracy=1e-5, regularization=1e-5):
+        t = time.time()
+
+        self.model_object_probability = self.__normalize_rows(
+            np.random.random([objects.shape[0], len(self.models)]))
+
+        # self.model_object_probability = np.tile(
+        #     self.model_prior_probability,
+        #     (objects.shape[0], 1),
+        #     )
+
+        # self.model_prior_probability = self.__normalize_rows(
+        #     np.random.random([1, len(self.models)]))
+        self.model_prior_probability =\
+            self.model_object_probability.mean(0)
+        
+
+        for iteration in range(max_iterations):
+            if len(self.models) == 1:
+                self.time = time.time() - t
+                return
+
+            print iteration
+            self.model_prior_probability =\
+                self.model_object_probability.mean(0)
+
+            print self.model_prior_probability,
+
+            # print self.model_object_probability
+            # self.models
+
+            for index, model in enumerate(self.models):
+                g = self.model_object_probability[:, index]
+                # print self.models[index].weights
+                # reset weights:
+                try:
+                    cond2 = abs(model.weights).min() > 1000.0 /\
+                        abs(objects).min()
+                except:
+                    cond2 = False
+                cond1 = self.models[index].weights is None
+                if not cond1 and cond2:
+                    self.models[index].weights = None
+                self.models[index].train(objects, labels, g=g)
+                # print "Weights of model %s = %s" % (index, self.models[index].weights)
+                # print self.models[index].weights
+
+            # E-Step
+            self.model_object_probability =\
+                self.classifier._get_model_object_probability(objects)
+
+        self.time = time.time() - t
+
+
+class EmIrls(object):
+    def __init__(self):
+        pass
 
 
 class TestLinearRegressionLeastSquaresModel(unittest.TestCase):
