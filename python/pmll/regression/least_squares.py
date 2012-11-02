@@ -4,6 +4,18 @@ import numpy as np
 from basemodel import BaseModel
 
 
+class FeatureGenerator(object):
+    def __init__(self, x):
+        self.x = x
+
+    def add_polynomial(self, max_power=1):
+        self.x = np.hstack(np.power(self.x, power) for power
+                           in range(1, max_power + 1))
+    
+    def add_constant(self):
+        self.x = np.hstack([np.ones([self.x.shape[0], 1]), self.x])
+
+
 class LeastSquaresModel(BaseModel):
     def __init__(self, weights=None):
         super(self.__class__, self).__init__()
@@ -11,6 +23,7 @@ class LeastSquaresModel(BaseModel):
 
     def train(self, x, y):
         self.weights = (x.T * x).I * x.T * y
+        return LeastSquaresRegressor(self.weights)
 
 
 class LeastSquaresPolynomModel(BaseModel):
@@ -26,6 +39,16 @@ class LeastSquaresPolynomModel(BaseModel):
             x = np.hstack([np.ones([x.shape[0], 1]), x])
 
         self.weights = (x.T * x).I * x.T * y
+
+
+class LeastSquaresRegressor(BaseRegressor):
+    def __init__(self, weights, feature_transformator=None):
+        self.feature_transformator = feature_transformator or lambda x: x
+
+    def regress(self, x):
+        self.feature_transformator(x) * self.weights
+
+    def __call__
 
 
 if __name__ == '__main__':

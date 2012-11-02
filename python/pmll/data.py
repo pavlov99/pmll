@@ -138,9 +138,20 @@ class ObjectFeatureMatrix(np.matrix):
 
 
 class ObjectFeatureMatrixTest(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.x = ObjectFeatureMatrix([[0, 1], [1, 2], [3, 4]])
 
+    def test_init(self):
+        self.assertTrue(isinstance(self.x, ObjectFeatureMatrix))
 
+    def test_nfeatures(self):
+        self.assertEqual(self.x.nfeatures, 2)
+
+    def test_nobjects(self):
+        self.assertEqual(self.x.nobjects, 3)
+
+    def test_vif(self):
+        pass
 
 
 class FeatureNominal(Feature):
