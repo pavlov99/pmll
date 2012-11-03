@@ -1,7 +1,5 @@
-import sys
-sys.path.append('..')
 import numpy as np
-from basemodel import BaseModel
+from ..base import BaseModel, BaseRegressor
 
 
 class FeatureGenerator(object):
@@ -43,12 +41,12 @@ class LeastSquaresPolynomModel(BaseModel):
 
 class LeastSquaresRegressor(BaseRegressor):
     def __init__(self, weights, feature_transformator=None):
-        self.feature_transformator = feature_transformator or lambda x: x
+        self.feature_transformator = feature_transformator or (lambda x: x)
 
     def regress(self, x):
         self.feature_transformator(x) * self.weights
 
-    def __call__
+    # def __call__
 
 
 if __name__ == '__main__':
