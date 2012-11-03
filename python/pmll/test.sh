@@ -1,0 +1,1 @@
+nosetests --rednose --all-modules 
