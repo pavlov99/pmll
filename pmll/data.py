@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
+import itertools
+import numpy as np
 import unittest
 
 
@@ -37,10 +40,17 @@ class Feature(object):
         return unicode(self).encode('utf8')
 
     def __unicode__(self):
-        return "%s:%s" % (unicode(self.title), unicode(self.type))
+        return "%s:%s" % (unicode(self.title), unicode(self.scale))
 
     def __eq__(self, other):
         return self.title == other.title and self.scale == other.scale
+
+    def __add__(self, other):
+        """
+        Return feature which is sum of other linear features
+        """
+        title = "%s + %s" % (self.title, other.title)
+        return self.__class__(title, "lin")
 
 
 class Data(object):
@@ -50,6 +60,7 @@ class Data(object):
     manager to define what is label.
     """
     def __init__(self, objects, features=None):
+        self.objects = np.matrix([list(obj) for obj in objects])
         self.features = []
 
 
@@ -89,11 +100,23 @@ class DataReader(object):
         if len(set(feature_titles)) != len(features):
             return [f for f in feature_titles if feature_titles.count(f) > 1]
 
-    def read(self, stream):
+    @classmethod
+    def read(cls, stream, delimiter="\t"):
         """
-        read tab separated values
+        Read tab separated values.
+        Return features and object generator
         """
-        pass
+        # convert stream to generator
+        stream = (line for line in stream)
+        header = itertools.islice(stream, 1).next()
+        features = cls.__parse_header(header)
+
+        Object = namedtuple('Object', [f.title for f in features])
+        objects = (Object(*[feature.convert(value) for feature, value
+                            in zip(features, line.strip().split(delimiter))])
+                   for line in stream)
+
+        return features, objects
 
 
 class FeatureTest(unittest.TestCase):
@@ -154,6 +177,11 @@ class DataTest(unittest.TestCase):
 class DataReaderTest(unittest.TestCase):
     def setUp(self):
         self.header = "# label:nom\tweight:lin\theigth:lin"
+        self.data_file_content = "\n".join([
+                "# label:nom\tweight:lin\theigth:lin",
+                "0\t70\t100.0",
+                "1\t50\t200",
+                ])
 
     def test_parse_header(self):
         DataReader._DataReader__parse_header(self.header)
@@ -179,6 +207,15 @@ class DataReaderTest(unittest.TestCase):
         duplicated_features =\
             DataReader._DataReader__get_duplicated_features(features)
         self.assertTrue("f" in duplicated_features)
+
+    def test_read(self):
+        features, objects = DataReader.read(self.data_file_content.split("\n"))
+        self.assertEqual(len(features), 3)
+        for feature in features:
+            self.assertIsInstance(feature, Feature)
+
+        objects_list = list(objects)
+        self.assertEqual(len(objects_list), 2)
 
 
 if __name__ == "__main__":
