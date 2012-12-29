@@ -18,19 +18,20 @@ class Feature(object):
 
     Feature does not know about data, does not have any mean or deviation.
     """
-    DEFAULT_SCALE = str
+    DEFAULT_SCALE = "null"
+    DEFAULT_TYPE = str
     FEATURE_TYPE_MAPPER = {
-        'nom': str,
-        'lin': float,
-        'rank': float,
-        'bin': bool,
+        "nom": str,
+        "lin": float,
+        "rank": float,
+        "bin": bool,
         }
 
     def __init__(self, title, scale=None):
         self.title = unicode(title)
-        self.scale = scale
+        self.scale = scale or self.DEFAULT_SCALE
         self.convert = self.FEATURE_TYPE_MAPPER.get(
-            self.scale, self.DEFAULT_SCALE)
+            self.scale, self.DEFAULT_TYPE)
 
     def __str__(self):
         return unicode(self).encode('utf8')
@@ -72,7 +73,21 @@ class DataReader(object):
             for field in header.split("\t")
             ]
 
+        duplicated_features = cls.__get_duplicated_features(features)
+        if duplicated_features:
+            msg = "Duplicated features passed: %s" % duplicated_features
+            raise ValueError(msg)
+
         return features
+
+    @classmethod
+    def __get_duplicated_features(cls, features):
+        """
+        Return list of duplicated feature titles
+        """
+        feature_titles = [f.title for f in features]
+        if len(set(feature_titles)) != len(features):
+            return [f for f in feature_titles if feature_titles.count(f) > 1]
 
     def read(self, stream):
         """
@@ -158,6 +173,12 @@ class DataReaderTest(unittest.TestCase):
         header = self.header.rsplit(":", 1)[0]
         features = DataReader._DataReader__parse_header(header)
         self.assertEqual(features[-1].scale, Feature.DEFAULT_SCALE)
+
+    def test_get_duplicated_features(self):
+        features = [Feature("f", "lin"), Feature("f")]
+        duplicated_features =\
+            DataReader._DataReader__get_duplicated_features(features)
+        self.assertTrue("f" in duplicated_features)
 
 
 if __name__ == "__main__":
