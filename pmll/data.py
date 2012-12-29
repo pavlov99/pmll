@@ -2,8 +2,8 @@
 import unittest
 
 
-__author__  = "Kirill Pavlov"
-__email__   = "kirill.pavlov@phystech.edu"
+__author__ = "Kirill Pavlov"
+__email__ = "kirill.pavlov@phystech.edu"
 
 
 class Feature(object):
@@ -79,7 +79,6 @@ class DataReader(object):
         read tab separated values
         """
         pass
-
 
 
 class FeatureTest(unittest.TestCase):
