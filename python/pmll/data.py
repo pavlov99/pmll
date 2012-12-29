@@ -35,7 +35,7 @@ class Feature(object):
         }
 
     def __init__(self, title, type_=None):
-        self.title = title
+        self.title = unicode(title)
         self.type = type_
         self.convert = self.FEATURE_TYPE_MAPPER.get(self.type, str)
 
@@ -154,6 +154,31 @@ class ObjectFeatureMatrixTest(unittest.TestCase):
         pass
 
 
+class Object(object):
+    pass
+
+
+class Sample(object):
+    """
+    Object in general, consist of all of its characteristics including label
+    """
+    pass
+
+
+class DataTest(unittest.TestCase):
+    def setUp(self):
+        self.nobjects = 4
+        self.nfeatures = 3
+        self.x = np.random.randint(0, 10, (self.nobjects, self.nfeatures))
+
+    #     self.data = Data(x, y)
+    #     Data(x, y, features)
+
+    # d[index] -> object(x, y)
+    # d[indexes] -> Data with selected indexes
+    # d[:] -> d
+    # d[:, index(es)] -> corresponding feature(s) = Data
+
 class FeatureNominal(Feature):
     """
     Store possible values for objects and mapper them to integers
@@ -189,6 +214,10 @@ class Data(object):
         else:
             self.y = np.matrix([[None]] * len(features))
 
+    def __getitem__(self, key):
+        print type(key), key
+        return self
+
     @property
     def nfeatures(self):
         return len(self.features)
@@ -197,7 +226,7 @@ class Data(object):
         return unicode(self.x)
 
     def __str__(self):
-        return self.__unicode__()
+        return unicode(self).encode('utf8')
 
 
 class BigData(object):
