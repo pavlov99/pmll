@@ -61,7 +61,8 @@ class Data(object):
     """
     def __init__(self, objects, features=None):
         self.objects = np.matrix([list(obj) for obj in objects])
-        self.features = []
+        self.features = features or [Feature("f%s" % i)
+                                     for i in range(self.objects.shape[1])]
 
 
 class DataReader(object):
@@ -116,7 +117,7 @@ class DataReader(object):
                             in zip(features, line.strip().split(delimiter))])
                    for line in stream)
 
-        return features, objects
+        return objects, features
 
 
 class FeatureTest(unittest.TestCase):
@@ -157,7 +158,8 @@ class DataTest(unittest.TestCase):
                 "0\t70\t100.0",
                 "1\t50\t200",
                 ])
-        self.data = Data(self.data_file_content.split("\n"))
+        objects, features = DataReader.read(self.data_file_content.split("\n"))
+        self.data = Data(objects, features)
 
     def test_init(self):
         pass
@@ -209,7 +211,7 @@ class DataReaderTest(unittest.TestCase):
         self.assertTrue("f" in duplicated_features)
 
     def test_read(self):
-        features, objects = DataReader.read(self.data_file_content.split("\n"))
+        objects, features = DataReader.read(self.data_file_content.split("\n"))
         self.assertEqual(len(features), 3)
         for feature in features:
             self.assertIsInstance(feature, Feature)
