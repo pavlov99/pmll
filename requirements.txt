@@ -1,5 +1,2 @@
-nose2
-nose2-cov
-sympy
-numpy
-scipy
+nose2==0.4.5
+sympy==0.7.2
