@@ -1,6 +1,6 @@
 # Python machine learning library - pmll
 
-[build_status]: https://api.travis-ci.org/pavlov99/pmll.png  "pmll build status"
+[![build_status](https://secure.travis-ci.org/pavlov99/pmll.png?branch=master)](http://travis-ci.org/pavlov99/pmll)
 
 Inspired by: R, Matlab, orange
 
