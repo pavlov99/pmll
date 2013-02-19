@@ -1,0 +1,16 @@
+Metadata-Version: 1.0
+Name: pmll
+Version: 0.0.2.dev
+Summary: Python machine learning library
+Home-page: pmll.kirillpavlov.com
+Author: Kirill Pavlov
+Author-email: kirill.pavlov@phystech.edu
+License: MIT
+Description: UNKNOWN
+Keywords: data mining
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Environment :: Console
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python
