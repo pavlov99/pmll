@@ -1,12 +1,11 @@
 # Python machine learning library - pmll
 
+[build_status]: https://api.travis-ci.org/pavlov99/pmll.png  "pmll build status"
+
 Inspired by: R, Matlab, orange
 
+Author: Kirill Pavlov <mailto:kirill.pavlov@phystech.edu>
 
-:Authors:
-    Kirill Pavlov <kirill.pavlov@phystech.edu>
-
-:Version: 0.1 of 2012/05/28
 
 ## Data Format:
 Data is stored in tab separated file. First line is header with field names and types. First line starts with sharp and space (# ). Then follows label:label_type [field:type]
