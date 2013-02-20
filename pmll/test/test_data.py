@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest2
-
-
-import sys
-sys.path.append("/Users/pavlov99/git/pmll/pmll")
-from data import (
+from ..data import (
     Feature,
     Data,
     DataReader,
