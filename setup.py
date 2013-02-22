@@ -1,8 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup
+
 setup(
     name="pmll",
     version=":versiontools:pmll:",
-    packages=find_packages(),
+    packages=["pmll"],
     test_suite="nose2.collector.collector",
     setup_requires=[
         'versiontools >= 1.8',
