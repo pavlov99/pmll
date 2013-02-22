@@ -5,6 +5,7 @@ setup(
     version=":versiontools:pmll:",
     packages=["pmll"],
     test_suite="nose2.collector.collector",
+    tests_require=['nose2'],
     setup_requires=[
         'versiontools >= 1.8',
     ],
