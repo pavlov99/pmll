@@ -1,4 +1,15 @@
+import os
 from setuptools import setup, find_packages
+
+
+def read(fname):
+    try:
+        return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    except IOError:
+        return ''
+
+install_requires = read('requirements.txt').split()
+
 setup(
     name="pmll",
     version=":versiontools:pmll:",
