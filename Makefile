@@ -1,4 +1,6 @@
-all: .env
+ENV=$(CURDIR)/.env
+
+all: $(ENV)
 
 .PHONY: help
 # target: help - Display callable targets
@@ -29,6 +31,8 @@ upload: docs
 test: clean
 	@python setup.py test
 
-.env: requirements.txt
-	virtualenv --system-site-packages .env
-	.env/bin/pip install -M -r requirements.txt
+$(ENV): requirements.txt
+	# virtualenv --no-site-packages .env
+	viryualenv --system-site-packages .env  # system numpy scipy
+	$(ENV)/bin/pip install -M -r requirements.txt
+	touch $(ENV)
