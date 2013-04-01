@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from pmll import version
 
 
 def read(fname):
@@ -12,13 +13,10 @@ install_requires = read('requirements.txt').split()
 
 setup(
     name="pmll",
-    version=":versiontools:pmll:",
+    version=version,
     packages=find_packages(),
     test_suite="nose2.collector.collector",
     tests_require=['nose2'],
-    setup_requires=[
-        'versiontools >= 1.8',
-    ],
 
     # metadata for upload to PyPI
     author="Kirill Pavlov",
