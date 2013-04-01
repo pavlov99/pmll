@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import unittest2
+import unittest
 from ..data import (
     Feature,
     Data,
@@ -10,7 +10,7 @@ __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
 
-class FeatureTest(unittest2.TestCase):
+class FeatureTest(unittest.TestCase):
     def setUp(self):
         self.feature = Feature('f')
         self.feature_nom = Feature('f', 'nom')
@@ -41,7 +41,7 @@ class FeatureTest(unittest2.TestCase):
         self.assertEqual(self.feature_bin.convert('1.0'), True)
 
 
-class DataTest(unittest2.TestCase):
+class DataTest(unittest.TestCase):
     def setUp(self):
         self.data_file_content = "\n".join(
             [
@@ -67,7 +67,7 @@ class DataTest(unittest2.TestCase):
             self.assertIsInstance(feature, Feature)
 
 
-class DataReaderTest(unittest2.TestCase):
+class DataReaderTest(unittest.TestCase):
     def setUp(self):
         self.header = "# label:nom\tweight:lin\theigth:lin"
         self.data_file_content = "\n".join(
@@ -113,4 +113,4 @@ class DataReaderTest(unittest2.TestCase):
 
 
 if __name__ == "__main__":
-    unittest2.main()
+    unittest.main()
