@@ -13,8 +13,9 @@ install_requires = read('requirements.txt').split()
 setup(
     name="pmll",
     version=":versiontools:pmll:",
-    packages=find_packages(),
+    packages=["pmll"],
     test_suite="nose2.collector.collector",
+    tests_require=['nose2'],
     setup_requires=[
         'versiontools >= 1.8',
     ],
