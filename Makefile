@@ -29,7 +29,7 @@ upload: docs
 .PHONY: test
 # target: test - Runs tests
 test: clean
-	@python setup.py test
+	@nose2
 
 $(ENV): requirements.txt
 	# virtualenv --no-site-packages .env
