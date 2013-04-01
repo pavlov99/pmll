@@ -30,5 +30,5 @@ test: clean
 	@python setup.py test
 
 .env: requirements.txt
-	virtualenv --no-site-packages .env
+	virtualenv --system-site-packages .env
 	.env/bin/pip install -M -r requirements.txt
