@@ -7,16 +7,16 @@ def read(fname):
     try:
         return open(os.path.join(os.path.dirname(__file__), fname)).read()
     except IOError:
-        return ''
+        return ""
 
-install_requires = read('requirements.txt').split()
+install_requires = read("requirements.txt").split()
 
 setup(
     name="pmll",
     version=version,
     packages=find_packages(),
     test_suite="nose2.collector.collector",
-    tests_require=['nose2'],
+    tests_require=["nose2"],
 
     # metadata for upload to PyPI
     author="Kirill Pavlov",
@@ -29,7 +29,10 @@ setup(
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.2",
+        "Operating System :: OS Independent",
+        "Topic :: Software Development :: Libraries",
     ],
     license="MIT",
 )
