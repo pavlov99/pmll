@@ -4,3 +4,4 @@
 *.egg
 *.egg-info
 .tox
+dist/*
