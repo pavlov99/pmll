@@ -1,18 +1,42 @@
-language: python
-python:
-  - "2.7"
-  - "3.2"
+# vim ft=yaml
+# travis-ci.org definition for pmll build
+#
+# We pretend to be erlang because we can't use the python support in
+# travis-ci; it uses virtualenvs, they do not have numpy, scipy, matplotlib,
+# and it is impractical to build them
+
+language: erlang
+env:
+    - PYTHON=python PYSUF='' PYVER=2.7
+    - PYTHON=python3 PYSUF='3' PYVER=3.2
 
 branches:
   only:
     - master
 
-before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq python-numpy python-scipy python3-numpy python3-scipy
+install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq $PYTHON-dev
+    - sudo apt-get install -qq $PYTHON-numpy
+    - sudo apt-get install -qq $PYTHON-scipy
+    - sudo apt-get install -qq $PYTHON-setuptools
 
-# command to install dependencies
-install: "pip install -r requirements.txt --use-mirrors"
+    # Installing sympy for python3 currently an unpleasant task.
+    # The following is an extended virtual line; will be made into one line by
+    # Travis processing. Avoid `-` at the beginning of the line, remember to
+    # add `;` at the end of continuation lines.
+    - if [ "${PYSUF}" == "3" ]; then
+        git clone git://github.com/sympy/sympy.git _sympy ;
+        cd _sympy ;
+        git checkout -b 0.7.2 sympy-0.7.2 ;
+        python3 ./bin/use2to3 ;
+        cd py3k-sympy ;
+        sudo python3 setup.py install ;
+        cd ../.. ;
+      else
+        sudo apt-get install $PYTHON-sympy ;
+      fi
 
-# command to run tests
-script: python setup.py test
+    - pip install -r requirements.txt --use-mirrors
+script:
+    - python setup.py test
