@@ -40,7 +40,7 @@ upload:
 .PHONY: test
 # target: test - Runs tests
 test: clean
-	@nose2
+	$(PYTHON) setup.py test
 
 init_virtualenv: requirements.txt
 	virtualenv --no-site-packages .env

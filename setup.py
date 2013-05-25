@@ -2,6 +2,14 @@ import os
 from setuptools import setup, find_packages
 from pmll import version
 
+# Import multiprocessing to prevent test run problem. In case of nosetests
+# (not nose2) there is probles, for details see:
+# https://groups.google.com/forum/#!msg/nose-users/fnJ-kAUbYHQ/_UsLN786ygcJ
+# http://bugs.python.org/issue15881#msg170215w
+try:
+    import multiprocessing
+except ImportError:
+    pass
 
 def read(fname):
     try:
@@ -15,8 +23,9 @@ setup(
     name="pmll",
     version=version,
     packages=find_packages(),
-    test_suite="nose2.collector.collector",
-    tests_require=["nose2"],
+    # test_suite="nose2.collector.collector",
+    test_suite="nose.collector",
+    tests_require=["nose"],
 
     # metadata for upload to PyPI
     author="Kirill Pavlov",
@@ -24,8 +33,10 @@ setup(
     url="https://github.com/pavlov99/pmll",
     description="Python machine learning library",
     keywords="data mining",
+
+    # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 2 - Pre-Alpha",
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
