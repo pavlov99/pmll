@@ -28,12 +28,19 @@ class Feature(object):
         "rank": float,
         "bin": bool,
     }
+    SCALES = FEATURE_TYPE_MAPPER.keys()
 
     def __init__(self, title, scale=None):
-        self.title = unicode(title)
+        """Init Feature object
+
+        __is_atom = True for base features
+                    False for features created using others
+        """
+        self.title = title
         self.scale = scale or self.DEFAULT_SCALE
         self.convert = self.FEATURE_TYPE_MAPPER.get(
             self.scale, self.DEFAULT_TYPE)
+        self.__is_atom = True
 
     def __str__(self):
         return unicode(self).encode('utf8')
