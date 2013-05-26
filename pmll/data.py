@@ -108,6 +108,9 @@ class Data(object):
             return self.__class__(
                     self.objects.__getitem__(key).tolist(), self.features)
         elif len(key) == 2:
+            if isinstance(key[1], Feature):
+                key = key[0], self.features.index(key[1])
+
             objects = self.objects.__getitem__(key).tolist()
             if isinstance(key[1], int):
                 features = [self.features[key[1]]]

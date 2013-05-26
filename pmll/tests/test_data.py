@@ -95,11 +95,10 @@ class DataTest(unittest.TestCase):
 
     def test_getitem_feature(self):
         data = Data([(0, 1)], [Feature("f1"), Feature("f2")])
-        self.assertEqual(data[:, Feature("f1")], Data([(0, )]))
-        self.assertEqual(data[:, Feature("f2")], Data([(1, )]))
-
-    def test__add__(self):
-        pass
+        self.assertEqual(data[:, Feature("f1")], Data([(0, )],
+            [Feature("f1")]))
+        self.assertEqual(data[:, Feature("f2")], Data([(1, )],
+            [Feature("f2")]))
 
 
 class DataReaderTest(unittest.TestCase):
