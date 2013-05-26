@@ -49,7 +49,14 @@ class Feature(object):
         return "%s:%s" % (unicode(self.title), unicode(self.scale))
 
     def __eq__(self, other):
-        return self.title == other.title and self.scale == other.scale
+        return not(self < other or other < self)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __lt__(self, other):
+        """Helper method to order features"""
+        return (self.scale, self.title) < (other.scale, other.title)
 
     def __add__(self, other):
         """
@@ -66,9 +73,47 @@ class Data(object):
     manager to define what is label.
     """
     def __init__(self, objects, features=None):
+        """Init data class
+        objects: convertable to list instances
+        features: list of Features
+        """
         self.objects = np.matrix([list(obj) for obj in objects])
         self.features = features or [Feature("f%s" % i)
                                      for i in range(self.objects.shape[1])]
+
+    def __repr__(self):
+        return "Features: {0}\n{1}".format(
+                " ".join([str(f) for f in self.features]),
+                self.objects.__repr__())
+
+    def __eq__(self, other):
+        """Check equality of datasets
+
+        data1 == data2 if they have the same features and
+        objects being sorted according to data1.features are equal
+        """
+        indexes_self, features_self =\
+                zip(*sorted(enumerate(self.features), key=lambda x: x[1]))
+        indexes_other, features_other =\
+                zip(*sorted(enumerate(other.features), key=lambda x: x[1]))
+        return features_self == features_other and \
+                (self.objects[:, np.array(indexes_self)] == \
+                other.objects[:, np.array(indexes_other)]).all()
+
+    def __ne__(self, other):
+        return not (self == other)
+
+    def __getitem__(self, key):
+        if isinstance(key, (int, slice)):
+            return self.__class__(
+                    self.objects.__getitem__(key).tolist(), self.features)
+        elif len(key) == 2:
+            objects = self.objects.__getitem__(key).tolist()
+            if isinstance(key[1], int):
+                features = [self.features[key[1]]]
+            elif isinstance(key[1], slice):
+                features = self.features.__getitem__(key[1])
+            return self.__class__(objects, features)
 
 
 class DataReader(object):

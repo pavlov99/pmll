@@ -66,6 +66,41 @@ class DataTest(unittest.TestCase):
         for feature in self.data.features:
             self.assertIsInstance(feature, Feature)
 
+    def test__eq__(self):
+        objects1 = [(0, 1)]
+        objects2 = [(1, 0)]
+        features1 = [Feature("f1"), Feature("f2")]
+        features2 = [Feature("f2"), Feature("f1")]
+        #import ipdb; ipdb.set_trace()
+        self.assertEqual(Data(objects1), Data(objects1))
+        self.assertEqual(Data(objects1, features1), Data(objects1, features1))
+        self.assertEqual(Data(objects1, features1), Data(objects2, features2))
+
+        self.assertNotEqual(
+                Data(objects1, features1), Data(objects1, features2))
+
+    def test_getitem(self):
+        data = Data([(0, 1), (2, 3)])
+        self.assertEqual(data[:], data)
+        self.assertEqual(data[0, :], Data([(0, 1)]))
+        self.assertEqual(data[0], Data([(0, 1)]))
+        self.assertEqual(data[1], Data([(2, 3)]))
+        self.assertEqual(data[:, 0], Data([(0, ), (2, )], [data.features[0]]))
+        self.assertEqual(data[:, 1], Data([(1, ), (3, )], [data.features[1]]))
+
+    def test_getitem_many(self):
+        data = Data([(0, 1, 2)])
+        self.assertEqual(data[:, 0:1], Data([(0, 1)], data.features[0:1]))
+        self.assertEqual(data[:, :], data)
+
+    def test_getitem_feature(self):
+        data = Data([(0, 1)], [Feature("f1"), Feature("f2")])
+        self.assertEqual(data[:, Feature("f1")], Data([(0, )]))
+        self.assertEqual(data[:, Feature("f2")], Data([(1, )]))
+
+    def test__add__(self):
+        pass
+
 
 class DataReaderTest(unittest.TestCase):
     def setUp(self):
