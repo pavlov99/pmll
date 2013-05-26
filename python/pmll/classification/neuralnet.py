@@ -21,7 +21,7 @@ class NeuralLayer(object):
         constant_neuron - boolean indicator of neuron with constant output
         """
         self.constant_neuron = constant_neuron
-        self.number_inputs = number_inputs if not constant_neuron else number_inputs + 1 
+        self.number_inputs = number_inputs if not constant_neuron else number_inputs + 1
         self.number_outputs = number_outputs
         if initial_weights is not None:
             initial_weights = np.asarray(initial_weights)

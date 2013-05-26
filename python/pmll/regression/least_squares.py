@@ -9,7 +9,7 @@ class FeatureGenerator(object):
     def add_polynomial(self, max_power=1):
         self.x = np.hstack(np.power(self.x, power) for power
                            in range(1, max_power + 1))
-    
+
     def add_constant(self):
         self.x = np.hstack([np.ones([self.x.shape[0], 1]), self.x])
 
@@ -45,8 +45,6 @@ class LeastSquaresRegressor(BaseRegressor):
 
     def regress(self, x):
         self.feature_transformator(x) * self.weights
-
-    # def __call__
 
 
 if __name__ == '__main__':
