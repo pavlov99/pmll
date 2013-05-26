@@ -117,6 +117,36 @@ class Data(object):
                 features = self.features.__getitem__(key[1])
             return self.__class__(objects, features)
 
+    @property
+    def vif(self):
+        """Calculate variance inflation factor"""
+        if len(self.features) < 2:
+            raise ValueError("Objects should have at least 2 features")
+
+        if self.objects.shape[0] < self.objects.shape[1]:
+            raise ValueError("Number of objects should be more than features")
+
+        def __regression_residuals(x, y):
+            """ Calculate regression residuals:
+            y - x * (x' * x)^(-1) * x' * y;
+            Input:
+                x - np.matrix(l, n)
+                y - np.matrix(l, 1)
+            Output:
+                residuals y - x*w : array(l, 1)
+            """
+            return np.asarray(y - x * (x.T * x) ** (-1) * x.T * y)
+
+        vif = []
+        for i in range(len(self.features)):
+            rows = range(i) + range(i + 1, len(self.features))
+            residuals = __regression_residuals(
+                self.objects[:, rows], self.objects[:, i])
+            v = self.objects[:, i].std() ** 2 / sum(residuals ** 2)
+            vif.append(float(v))
+
+        return vif
+
 
 class DataReader(object):
     """

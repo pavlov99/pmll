@@ -100,6 +100,19 @@ class DataTest(unittest.TestCase):
         self.assertEqual(
             data[:, Feature("f2")], Data([(1, )], [Feature("f2")]))
 
+    def test_vif_one_feature(self):
+        with self.assertRaises(ValueError):
+            Data([(0, )]).vif
+            Data([(0, ), (1, )]).vif
+
+    def test_vif_feateres_more_than_objects(self):
+        with self.assertRaises(ValueError):
+            Data([(0, 1)]).vif
+            Data([(0, 1, 2), (1, 2, 3)]).vif
+
+    def test_vif(self):
+        self.assertEqual(Data([(0, 1), (1, 2)]).vif, [1.25, 0.25])
+
 
 class DataReaderTest(unittest.TestCase):
     def setUp(self):
