@@ -25,24 +25,24 @@ or
 
 ## Competitors
 
+* [bigml](https://github.com/bigmlcom/python) - machine learning easy by taking care of the details required to add data-driven decisions and predictive power to your company.
+* [mdp](http://mdp-toolkit.sourceforge.net/) - Modular toolkit for Data Processing.
 * [mlpy](http://mlpy.sourceforge.net/) - is a Python module for Machine Learning built on top of NumPy/SciPy and the GNU Scientific Libraries.
-* [scikit](http://scikit-learn.org/stable/) - machine learning in Python.
 * [orange](http://orange.biolab.si/) - Data mining through visual programming or Python scripting.
 * [pybrain](http://pybrain.org/) - is a modular Machine Learning Library for Python. Mainly networks.
-* [bigml](https://github.com/bigmlcom/python) - machine learning easy by taking care of the details required to add data-driven decisions and predictive power to your company.
 * [pyml](http://pyml.sourceforge.net/) - an interactive object oriented framework for machine learning written in Python. PyML focuses on SVMs and other kernel methods.
-* [mdp](http://mdp-toolkit.sourceforge.net/) - Modular toolkit for Data Processing.
+* [scikit](http://scikit-learn.org/stable/) - machine learning in Python.
 
 
 ## Data Format:
-Data is stored in tab separated file. First line is header with field names and types. First line starts with sharp and space (# ). Then follows label:label_type [field:type]
+Data is stored in tab separated file. First line is header with field names and types. First line starts with sharp and space (# ). Then follows `label:label_type [field:type]`
 
 Possible scale(field) types:
 
-* lin
-* bin
-* nom
-* rank
+* nom:  nominal value represented by string
+* lin:  float number in linear scale
+* rank: float number, arithmetic operations are not supported
+* bin:  binary format, true/false or 1/0
 
 Example:
 
