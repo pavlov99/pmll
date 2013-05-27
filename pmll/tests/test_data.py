@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from collections import namedtuple
 import unittest
 
 from ..data import (
@@ -40,6 +41,22 @@ class FeatureTest(unittest.TestCase):
 
         self.assertTrue(isinstance(self.feature_bin.convert('1.0'), bool))
         self.assertEqual(self.feature_bin.convert('1.0'), True)
+
+    def test__call__object(self):
+        class Object(object):
+            f1 = "value"
+        self.assertEqual(Feature("f1")(Object()), "value")
+
+        cls = namedtuple("Object", ["f1", "f2"])
+        self.assertEqual(Feature("f1")(cls(0, 1)), 0)
+        self.assertEqual(Feature("f2")(cls(0, 1)), 1)
+
+    def test__call__data(self):
+        data = Data([[1, 2, 3],
+                     [3, 4, 5]])
+        self.assertEqual(data.features[0](data), data[:, 0])
+        self.assertEqual(data.features[1](data), data[:, 1])
+        self.assertEqual(data.features[2](data), data[:, 2])
 
 
 class DataTest(unittest.TestCase):

@@ -3,7 +3,6 @@ from collections import namedtuple
 import itertools
 import numpy as np
 
-
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
@@ -56,6 +55,12 @@ class Feature(object):
     def __lt__(self, other):
         """Helper method to order features"""
         return (self.scale, self.title) < (other.scale, other.title)
+
+    def __call__(self, objects):
+        if isinstance(objects, Data):
+            return objects[:, self]
+        else:
+            return getattr(objects, self.title)
 
     def __add__(self, other):
         """Return feature which is sum of other linear features"""
