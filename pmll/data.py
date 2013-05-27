@@ -9,14 +9,13 @@ __email__ = "kirill.pavlov@phystech.edu"
 
 
 class Feature(object):
-    """
-    Feture representation, converts feature value according to one of the
-    following types:
+    """Feture representation
+    Converts feature value according to one of the following types:
 
-    nom: nominal value represented by string
-    lin: float number in linear scale
+    nom:  nominal value represented by string
+    lin:  float number in linear scale
     rank: float number, arithmetic operations are not supported
-    bin: binary format, true/false or 1/0
+    bin:  binary format, true/false or 1/0
 
     Feature does not know about data, does not have any mean or deviation.
     """
@@ -52,25 +51,23 @@ class Feature(object):
         return not(self < other or other < self)
 
     def __ne__(self, other):
-        return not self == other
+        return not (self == other)
 
     def __lt__(self, other):
         """Helper method to order features"""
         return (self.scale, self.title) < (other.scale, other.title)
 
     def __add__(self, other):
-        """
-        Return feature which is sum of other linear features
-        """
-        title = "%s + %s" % (self.title, other.title)
-        return self.__class__(title, "lin")
+        """Return feature which is sum of other linear features"""
+        title = "{0} + {1}".format(self.title, other.title)
+        feature = self.__class__(title, "lin")
+        return feature
 
 
 class Data(object):
-    """
-    Data is general data representation. It is object x feature matrix.
-    There is no label, all of the features are equal. It is job for data
-    manager to define what is label.
+    """General data representation.
+    It is object-feature matrix. There is no label, all of the features are
+    equal. It is job for data manager to define what is label.
     """
     def __init__(self, objects, features=None):
         """Init data class
@@ -127,7 +124,7 @@ class Data(object):
             raise ValueError("Number of objects should be more than features")
 
         def __regression_residuals(x, y):
-            """ Calculate regression residuals:
+            """Calculate regression residuals:
             y - x * (x' * x)^(-1) * x' * y;
             Input:
                 x - np.matrix(l, n)
@@ -149,9 +146,9 @@ class Data(object):
 
 
 class DataReader(object):
-    """
-    Read data form tab separated file stream either into objects or matrix
-    stream can be open(file) or line generator
+    """Read data form tab separated file stream.
+    Read data either into objects or matri. Stream can be open(file) or line
+    generator.
     """
     @classmethod
     def __parse_header(cls, header):
@@ -177,17 +174,14 @@ class DataReader(object):
 
     @classmethod
     def __get_duplicated_features(cls, features):
-        """
-        Return list of duplicated feature titles
-        """
+        """Return list of duplicated feature titles"""
         feature_titles = [f.title for f in features]
         if len(set(feature_titles)) != len(features):
             return [f for f in feature_titles if feature_titles.count(f) > 1]
 
     @classmethod
     def read(cls, stream, delimiter="\t"):
-        """
-        Read tab separated values.
+        """Read tab separated values.
         Return features and object generator
         """
         # convert stream to generator

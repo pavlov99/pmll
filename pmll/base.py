@@ -39,10 +39,7 @@ class BaseModel(object):
         self.__decorate_method('train')
 
     def __decorate_method(self, method_name):
-        """
-        Decorate given method (change to decoreted):
-          - calculate time.
-        """
+        """Decorate given method (change to decoreted): calculate time"""
         method = getattr(self, method_name)
 
         def decorated_method(*args, **kwargs):
@@ -56,8 +53,8 @@ class BaseModel(object):
 
     @abstractproperty
     def predictor(self):
-        """
-        predictor property returns classifier or regressor or something
+        """Return predictor for algorithm.
+        Predictor property returns classifier or regressor or something
         which has call method and is able to predict labels for new objects.
         It is possible to initialize model and get predictor without train.
         This is useful case if you already know model parameters.
@@ -69,14 +66,15 @@ class BaseModel(object):
 
     @abstractmethod
     def train(self, x, y):
-        """
-        Abstract train method, return self instance. It is possible to call
-        self.predictor or self.train().predictor
+        """Abstract train method, return self instance.
+        Model fits parameters during train. It is possible to call
+        self.predictor (for existing model) or self.train().predictor
         """
         return self
 
 
 class BaseClassifier(object):
+    """Base class for any classification algorithm"""
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -88,6 +86,7 @@ class BaseClassifier(object):
 
 
 class BaseRegressor(object):
+    """Base class for any regression algorithm"""
     __metaclass__ = ABCMeta
 
     @abstractmethod
