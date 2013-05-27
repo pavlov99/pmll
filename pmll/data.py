@@ -56,8 +56,12 @@ class Feature(object):
         """Helper method to order features"""
         return (self.scale, self.title) < (other.scale, other.title)
 
+    def __hash__(self):
+        return hash((self.scale, self.title))
+
     def __call__(self, objects):
         if isinstance(objects, Data):
+            # TODO: calculate features not in Data
             return objects[:, self]
         else:
             return getattr(objects, self.title)
@@ -73,12 +77,21 @@ class Data(object):
     """General data representation.
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
+
+    There are operation to extend current instance:
+        + (__add__)     adds features. It is commutative, feature order does
+                        not matter
+        .extend(Data)   adds elements with the same features. Object order
+                        could matter. TODO: may be easier create new data?
     """
     def __init__(self, objects, features=None):
         """Init data class
         objects: convertable to list instances
         features: list of Features
         """
+        if features and len(features) > len(set(features)):
+            raise ValueError("Features should be unique")
+
         self.objects = np.matrix([list(obj) for obj in objects])
         self.features = features or [Feature("f%s" % i)
                                      for i in range(self.objects.shape[1])]
@@ -106,6 +119,7 @@ class Data(object):
         return not (self == other)
 
     def __getitem__(self, key):
+        # TODO: Add feature sclice (given list of features return Data)
         features = self.features
 
         if isinstance(key, tuple):
@@ -126,6 +140,17 @@ class Data(object):
             return Object(*objects[0])
         else:
             return Data(objects, features)
+
+    def __add__(self, other):
+        if self.objects.shape[0] != other.objects.shape[0]:
+            raise ValueError("Number of objects should be equal")
+
+        features = self.features + other.features
+        if len(features) > len(set(features)):
+            raise ValueError("Features are intersected")
+
+        return Data(np.hstack([self.objects, other.objects]).tolist(),
+                    features=features)
 
     @property
     def vif(self):

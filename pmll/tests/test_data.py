@@ -84,6 +84,10 @@ class DataTest(unittest.TestCase):
         for feature in self.data.features:
             self.assertIsInstance(feature, Feature)
 
+    def test__init__similar_features(self):
+        with self.assertRaises(ValueError):
+            Data([[0, 0]], [Feature("f0"), Feature("f0")])
+
     def test__eq__(self):
         objects1 = [(0, 1)]
         objects2 = [(1, 0)]
@@ -120,6 +124,20 @@ class DataTest(unittest.TestCase):
             data[:, Feature("f1")], Data([(0, )], [Feature("f1")]))
         self.assertEqual(
             data[:, Feature("f2")], Data([(1, )], [Feature("f2")]))
+
+    def test__add__different_number_objects(self):
+        with self.assertRaises(ValueError):
+            Data([[0], [1]], [Feature("f1")]) + Data([[1]], [Feature("f2")])
+
+    def test__add__features_intersected(self):
+        with self.assertRaises(ValueError):
+            Data([(0, )]) + Data([(1, )])
+
+    def test__add__(self):
+        data1 = Data([[0]], [Feature("f1")]) + Data([[1]], [Feature("f2")])
+        data2 = Data([[1]], [Feature("f2")]) + Data([[0]], [Feature("f1")])
+        self.assertEqual(data1, data2, "Not commutative operation")
+        self.assertEqual(data1, Data([[0, 1]], [Feature("f1"), Feature("f2")]))
 
     def test_vif_one_feature(self):
         with self.assertRaises(ValueError):
