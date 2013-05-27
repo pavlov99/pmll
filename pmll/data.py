@@ -103,25 +103,22 @@ class Data(object):
     def __getitem__(self, key):
         features = self.features
 
-        if not isinstance(key, (int, slice)):
+        if isinstance(key, tuple):
+            # Convert second index to slice
             if isinstance(key[1], Feature):
                 key = (key[0], self.features.index(key[1])) + key[2:]
 
             if isinstance(key[1], int):
-                features = [self.features[key[1]]]
-            elif isinstance(key[1], slice):
-                features = self.features.__getitem__(key[1])
+                key = (key[0], slice(key[1], key[1] + 1)) + key[2:]
+
+            features = self.features.__getitem__(key[1])
 
         objects = self.objects.__getitem__(key).tolist()
-        if isinstance(key, int):
-            Object = namedtuple('Object', [f.title for f in features])
+        Object = namedtuple('Object', [f.title for f in features])
+
+        if isinstance(key, int) or \
+           (isinstance(key, tuple) and isinstance(key[0], int)):
             return Object(*objects[0])
-        elif (not isinstance(key, slice) and isinstance(key[0], int)):
-            Object = namedtuple('Object', [f.title for f in features])
-            if isinstance(key[1], int):
-                return Object(objects)
-            else:
-                return Object(*objects[0])
         else:
             return Data(objects, features)
 
