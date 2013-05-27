@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import unittest
+
 from ..data import (
-    Feature,
     Data,
     DataReader,
+    Feature,
 )
 
 __author__ = "Kirill Pavlov"
