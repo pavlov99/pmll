@@ -101,18 +101,25 @@ class Data(object):
         return not (self == other)
 
     def __getitem__(self, key):
-        if isinstance(key, (int, slice)):
-            return Data(self.objects.__getitem__(key).tolist(), self.features)
-        elif len(key) == 2:
-            if isinstance(key[1], Feature):
-                key = key[0], self.features.index(key[1])
+        features = self.features
 
-            objects = self.objects.__getitem__(key).tolist()
+        if not isinstance(key, (int, slice)):
+            if isinstance(key[1], Feature):
+                key = (key[0], self.features.index(key[1])) + key[2:]
+
             if isinstance(key[1], int):
                 features = [self.features[key[1]]]
             elif isinstance(key[1], slice):
                 features = self.features.__getitem__(key[1])
-            return self.__class__(objects, features)
+
+        objects = self.objects.__getitem__(key).tolist()
+        if isinstance(key, int) or \
+           (not isinstance(key, slice) and isinstance(key[0], int)):
+
+            Object = namedtuple('Object', [f.title for f in features])
+            return Object(*objects[0])
+        else:
+            return Data(objects, features)
 
     @property
     def vif(self):

@@ -83,9 +83,9 @@ class DataTest(unittest.TestCase):
     def test_getitem(self):
         data = Data([(0, 1), (2, 3)])
         self.assertEqual(data[:], data)
-        self.assertEqual(data[0, :], Data([(0, 1)]))
-        self.assertEqual(data[0], Data([(0, 1)]))
-        self.assertEqual(data[1], Data([(2, 3)]))
+        self.assertEqual(data[0, :], (0, 1))
+        self.assertEqual(data[0], (0, 1))
+        self.assertEqual(data[1], (2, 3))
         self.assertEqual(data[:, 0], Data([(0, ), (2, )], [data.features[0]]))
         self.assertEqual(data[:, 1], Data([(1, ), (3, )], [data.features[1]]))
 
@@ -158,7 +158,3 @@ class DataReaderTest(unittest.TestCase):
 
         objects_list = list(objects)
         self.assertEqual(len(objects_list), 2)
-
-
-if __name__ == "__main__":
-    unittest.main()
