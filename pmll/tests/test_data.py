@@ -77,7 +77,7 @@ class DataTest(unittest.TestCase):
         self.assertEqual(Data(objects1, features1), Data(objects2, features2))
 
         self.assertNotEqual(
-                Data(objects1, features1), Data(objects1, features2))
+            Data(objects1, features1), Data(objects1, features2))
 
     def test_getitem(self):
         data = Data([(0, 1), (2, 3)])
@@ -95,10 +95,10 @@ class DataTest(unittest.TestCase):
 
     def test_getitem_feature(self):
         data = Data([(0, 1)], [Feature("f1"), Feature("f2")])
-        self.assertEqual(data[:, Feature("f1")], Data([(0, )],
-            [Feature("f1")]))
-        self.assertEqual(data[:, Feature("f2")], Data([(1, )],
-            [Feature("f2")]))
+        self.assertEqual(
+            data[:, Feature("f1")], Data([(0, )], [Feature("f1")]))
+        self.assertEqual(
+            data[:, Feature("f2")], Data([(1, )], [Feature("f2")]))
 
 
 class DataReaderTest(unittest.TestCase):

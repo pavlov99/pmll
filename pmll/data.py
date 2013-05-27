@@ -83,8 +83,8 @@ class Data(object):
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
-                " ".join([str(f) for f in self.features]),
-                self.objects.__repr__())
+            " ".join([str(f) for f in self.features]),
+            self.objects.__repr__())
 
     def __eq__(self, other):
         """Check equality of datasets
@@ -93,20 +93,19 @@ class Data(object):
         objects being sorted according to data1.features are equal
         """
         indexes_self, features_self =\
-                zip(*sorted(enumerate(self.features), key=lambda x: x[1]))
+            zip(*sorted(enumerate(self.features), key=lambda x: x[1]))
         indexes_other, features_other =\
-                zip(*sorted(enumerate(other.features), key=lambda x: x[1]))
-        return features_self == features_other and \
-                (self.objects[:, np.array(indexes_self)] == \
-                other.objects[:, np.array(indexes_other)]).all()
+            zip(*sorted(enumerate(other.features), key=lambda x: x[1]))
+        return features_self == features_other and (
+            self.objects[:, np.array(indexes_self)] ==
+            other.objects[:, np.array(indexes_other)]).all()
 
     def __ne__(self, other):
         return not (self == other)
 
     def __getitem__(self, key):
         if isinstance(key, (int, slice)):
-            return self.__class__(
-                    self.objects.__getitem__(key).tolist(), self.features)
+            return Data(self.objects.__getitem__(key).tolist(), self.features)
         elif len(key) == 2:
             if isinstance(key[1], Feature):
                 key = key[0], self.features.index(key[1])
