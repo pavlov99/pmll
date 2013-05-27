@@ -113,11 +113,15 @@ class Data(object):
                 features = self.features.__getitem__(key[1])
 
         objects = self.objects.__getitem__(key).tolist()
-        if isinstance(key, int) or \
-           (not isinstance(key, slice) and isinstance(key[0], int)):
-
+        if isinstance(key, int):
             Object = namedtuple('Object', [f.title for f in features])
             return Object(*objects[0])
+        elif (not isinstance(key, slice) and isinstance(key[0], int)):
+            Object = namedtuple('Object', [f.title for f in features])
+            if isinstance(key[1], int):
+                return Object(objects)
+            else:
+                return Object(*objects[0])
         else:
             return Data(objects, features)
 

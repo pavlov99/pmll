@@ -80,6 +80,9 @@ class DataTest(unittest.TestCase):
         self.assertNotEqual(
             Data(objects1, features1), Data(objects1, features2))
 
+    def test_getitem_one(self):
+        self.assertEqual(Data([[0]])[0, 0], (0, ))
+
     def test_getitem(self):
         data = Data([(0, 1), (2, 3)])
         self.assertEqual(data[:], data)
