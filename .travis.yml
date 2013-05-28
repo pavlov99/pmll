@@ -5,10 +5,10 @@
 # travis-ci; it uses virtualenvs, they do not have numpy, scipy, matplotlib,
 # and it is impractical to build them
 
+# - PYTHON=python3 PYSUF='3' PYVER=3.2
 language: erlang
 env:
     - PYTHON=python PYSUF='' PYVER=2.7
-    - PYTHON=python3 PYSUF='3' PYVER=3.2
 
 branches:
   only:
