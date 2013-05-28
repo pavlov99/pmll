@@ -27,11 +27,14 @@ or
 
 * [bigml](https://github.com/bigmlcom/python) - machine learning easy by taking care of the details required to add data-driven decisions and predictive power to your company.
 * [mdp](http://mdp-toolkit.sourceforge.net/) - Modular toolkit for Data Processing.
+* [milk](http://luispedro.org/software/milk) - Machine Learning Toolkit for Python.
 * [mlpy](http://mlpy.sourceforge.net/) - is a Python module for Machine Learning built on top of NumPy/SciPy and the GNU Scientific Libraries.
 * [orange](http://orange.biolab.si/) - Data mining through visual programming or Python scripting.
 * [pybrain](http://pybrain.org/) - is a modular Machine Learning Library for Python. Mainly networks.
 * [pyml](http://pyml.sourceforge.net/) - an interactive object oriented framework for machine learning written in Python. PyML focuses on SVMs and other kernel methods.
+* [PyMVPA](http://www.pymvpa.org/) - Multivariate Pattern Analysis in Python.
 * [scikit](http://scikit-learn.org/stable/) - machine learning in Python.
+* [Shogun](http://shogun-toolbox.org/) - machine learning powered by Vodka, Beer and Mate.
 
 
 ## Data Format:
