@@ -51,12 +51,3 @@ Example:
 
     # label:nom	weight:lin	heigth:lin
     0	70	180
-
-
-## Naming convention:
-Because of many matrix manipulation (multiplication and inversion) variables have short names. Use
-x - object-feature matrix
-y - labels
-w - weights, model parameters
-
-Dont use capitaized variables, it prevent collisions with class names
