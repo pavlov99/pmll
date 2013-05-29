@@ -7,6 +7,25 @@ __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
 
+class FeatureMeta(type):
+    """MetaClass for Features
+
+    For each feature defines its scala during class creation. Adds classmethod
+    to convert value according to feature type
+    """
+    __store__ = dict()
+
+    def __new__(cls, name, bases, attrs):
+        scale = name[len("Feature"):].lower()
+        class_ = super(FeatureMeta, cls).__new__(cls, name, bases, attrs)
+        setattr(class_, "scale", scale)
+        setattr(class_, "convert", classmethod(
+            lambda cls, x: Feature.FEATURE_TYPE_MAPPER.get(
+                scale, Feature.DEFAULT_TYPE)(x)))
+        cls.__store__[scale] = class_
+        return class_
+
+
 class Feature(object):
     """Feture representation
     Converts feature value according to one of the following types:
@@ -18,27 +37,24 @@ class Feature(object):
 
     Feature does not know about data, does not have any mean or deviation.
     """
-    DEFAULT_SCALE = "null"
-    DEFAULT_TYPE = str
+    __metaclass__ = FeatureMeta
+
     FEATURE_TYPE_MAPPER = {
         "nom": str,
         "lin": float,
         "rank": float,
         "bin": bool,
     }
-    SCALES = FEATURE_TYPE_MAPPER.keys()
+    DEFAULT_SCALE = "nom"
+    DEFAULT_TYPE = str
 
-    def __init__(self, title, scale=None):
-        """Init Feature object
-
-        __is_atom = True for base features
-                    False for features created using others
-        """
+    def __init__(self, title, scale=DEFAULT_SCALE):
         self.title = title
-        self.scale = scale or self.DEFAULT_SCALE
-        self.convert = self.FEATURE_TYPE_MAPPER.get(
-            self.scale, self.DEFAULT_TYPE)
-        self.__is_atom = True
+        self.scale = self.scale or scale
+
+    @property
+    def proxy(self):
+        return self.__class__.__store__[self.scale](self.title)
 
     def __str__(self):
         return unicode(self).encode('utf8')
@@ -66,11 +82,53 @@ class Feature(object):
         else:
             return getattr(objects, self.title)
 
+
+class FeatureNom(Feature):
+    pass
+
+
+class FeatureLin(Feature):
+    def __neg__(self):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __pos__(self):
+        return NotImplementedError("Feature is not implemented yet")
+
     def __add__(self, other):
-        """Return feature which is sum of other linear features"""
-        title = "{0} + {1}".format(self.title, other.title)
-        feature = self.__class__(title, "lin")
-        return feature
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __sub__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __mul__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __div__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __mod__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __divmod__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __pow__(self, other, modulo=None):
+        return NotImplementedError("Feature is not implemented yet")
+
+
+class FeatureBin(Feature):
+    def __and__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __xor__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+    def __or__(self, other):
+        return NotImplementedError("Feature is not implemented yet")
+
+
+class FeatureRank(Feature):
+    pass
 
 
 class Data(object):
@@ -199,7 +257,7 @@ class DataReader(object):
             header = header.replace(",", "\t").replace(";", "\t")
 
         features = [
-            Feature(*field.split(':'))
+            Feature(*field.split(':')).proxy
             for field in header.split("\t")
         ]
 

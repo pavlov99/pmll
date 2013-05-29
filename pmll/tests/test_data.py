@@ -6,6 +6,10 @@ from ..data import (
     Data,
     DataReader,
     Feature,
+    FeatureBin,
+    FeatureLin,
+    FeatureNom,
+    FeatureRank,
 )
 
 __author__ = "Kirill Pavlov"
@@ -26,21 +30,46 @@ class FeatureTest(unittest.TestCase):
         self.assertEqual(self.feature_nom, self.feature_nom2)
         self.assertNotEqual(self.feature_nom, self.feature_lin)
 
-    def test_convert(self):
-        self.assertTrue(isinstance(self.feature.convert('1.0'), str))
-        self.assertEqual(self.feature.convert('1.0'), '1.0')
+    def test_feature_convert_class(self):
+        self.assertTrue(isinstance(Feature("f"), Feature))
+        self.assertTrue(isinstance(Feature("f").proxy, FeatureNom))
 
-        self.assertTrue(isinstance(self.feature_nom.convert('1.0'), str))
-        self.assertEqual(self.feature.convert('1.0'), '1.0')
+        self.assertTrue(isinstance(
+            Feature("f", scale="nom").proxy, FeatureNom))
+        self.assertTrue(isinstance(Feature("f", "nom").proxy, FeatureNom))
+        self.assertTrue(isinstance(FeatureNom("f").proxy, FeatureNom))
+        self.assertTrue(isinstance(FeatureNom("f"), FeatureNom))
 
-        self.assertTrue(isinstance(self.feature_lin.convert('1.0'), float))
-        self.assertEqual(self.feature_lin.convert('1'), 1.0)
+        self.assertTrue(isinstance(
+            Feature("f", scale="lin").proxy, FeatureLin))
+        self.assertTrue(isinstance(Feature("f", "lin").proxy, FeatureLin))
+        self.assertTrue(isinstance(FeatureLin("f").proxy, FeatureLin))
+        self.assertTrue(isinstance(FeatureLin("f"), FeatureLin))
 
-        self.assertTrue(isinstance(self.feature_rank.convert('1.0'), float))
-        self.assertEqual(self.feature_rank.convert('1.0'), 1.0)
+        self.assertTrue(isinstance(
+            Feature("f", scale="rank").proxy, FeatureRank))
+        self.assertTrue(isinstance(Feature("f", "rank").proxy, FeatureRank))
+        self.assertTrue(isinstance(FeatureRank("f").proxy, FeatureRank))
+        self.assertTrue(isinstance(FeatureRank("f"), FeatureRank))
 
-        self.assertTrue(isinstance(self.feature_bin.convert('1.0'), bool))
-        self.assertEqual(self.feature_bin.convert('1.0'), True)
+        self.assertTrue(isinstance(
+            Feature("f", scale="bin").proxy, FeatureBin))
+        self.assertTrue(isinstance(Feature("f", "bin").proxy, FeatureBin))
+        self.assertTrue(isinstance(FeatureBin("f").proxy, FeatureBin))
+        self.assertTrue(isinstance(FeatureBin("f"), FeatureBin))
+
+    def test_feature_scales(self):
+        self.assertEqual(FeatureBin.scale, "bin")
+        self.assertEqual(FeatureLin.scale, "lin")
+        self.assertEqual(FeatureNom.scale, "nom")
+        self.assertEqual(FeatureRank.scale, "rank")
+
+    def test_feature_convert(self):
+        self.assertEqual(FeatureNom.convert('1.0'), '1.0')
+        self.assertEqual(FeatureLin.convert('1'), 1.0)
+        self.assertEqual(FeatureRank.convert('1.0'), 1)
+        self.assertEqual(FeatureBin.convert('1.0'), True)
+        self.assertEqual(FeatureBin.convert(''), False)
 
     def test__call__object(self):
         class Object(object):
@@ -57,6 +86,37 @@ class FeatureTest(unittest.TestCase):
         self.assertEqual(data.features[0](data), data[:, 0])
         self.assertEqual(data.features[1](data), data[:, 1])
         self.assertEqual(data.features[2](data), data[:, 2])
+
+
+class FeatureBinTest(unittest.TestCase):
+    def setUp(self):
+        self.f1 = FeatureBin("f1")
+        self.f2 = FeatureBin("f2")
+        self.Object = namedtuple("Object", ["f1", "f2"])
+
+    def test__and__(self):
+        f = self.f1 & self.f2
+        self.assertEqual(f.title, "f1 AND f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 0)
+        self.assertEqual(f(self.Object(1, 0)), 0)
+        self.assertEqual(f(self.Object(1, 1)), 1)
+
+    def test__or__(self):
+        f = self.f1 | self.f2
+        self.assertEqual(f.title, "f1 OR f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 1)
+        self.assertEqual(f(self.Object(1, 0)), 1)
+        self.assertEqual(f(self.Object(1, 1)), 1)
+
+    def test__xor__(self):
+        f = self.f1 ^ self.f2
+        self.assertEqual(f.title, "f1 XOR f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 1)
+        self.assertEqual(f(self.Object(1, 0)), 1)
+        self.assertEqual(f(self.Object(1, 1)), 0)
 
 
 class DataTest(unittest.TestCase):
