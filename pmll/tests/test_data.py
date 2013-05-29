@@ -88,6 +88,37 @@ class FeatureTest(unittest.TestCase):
         self.assertEqual(data.features[2](data), data[:, 2])
 
 
+class FeatureBinTest(unittest.TestCase):
+    def setUp(self):
+        self.f1 = FeatureBin("f1")
+        self.f2 = FeatureBin("f2")
+        self.Object = namedtuple("Object", ["f1", "f2"])
+
+    def test__and__(self):
+        f = self.f1 & self.f2
+        self.assertEqual(f.title, "f1 AND f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 0)
+        self.assertEqual(f(self.Object(1, 0)), 0)
+        self.assertEqual(f(self.Object(1, 1)), 1)
+
+    def test__or__(self):
+        f = self.f1 | self.f2
+        self.assertEqual(f.title, "f1 OR f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 1)
+        self.assertEqual(f(self.Object(1, 0)), 1)
+        self.assertEqual(f(self.Object(1, 1)), 1)
+
+    def test__xor__(self):
+        f = self.f1 ^ self.f2
+        self.assertEqual(f.title, "f1 XOR f2")
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 1)
+        self.assertEqual(f(self.Object(1, 0)), 1)
+        self.assertEqual(f(self.Object(1, 1)), 0)
+
+
 class DataTest(unittest.TestCase):
     def setUp(self):
         self.data_file_content = "\n".join(
