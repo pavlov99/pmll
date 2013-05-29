@@ -49,14 +49,13 @@ class Feature(object):
     DEFAULT_SCALE = "nom"
     DEFAULT_TYPE = str
 
-    #def __new__(cls, *args, **kwargs):
-        #scale = kwargs.get("scale") or args[1] if len(args) > 1 \
-            #else cls.DEFAULT_SCALE
-        #return cls.__store__[scale]
-
     def __init__(self, title, scale=DEFAULT_SCALE):
         self.title = title
-        self.scale = scale
+        self.scale = self.scale or scale
+
+    @property
+    def proxy(self):
+        return self.__class__.__store__[self.scale](self.title)
 
     def __str__(self):
         return unicode(self).encode('utf8')
@@ -86,8 +85,7 @@ class Feature(object):
 
 
 class FeatureNom(Feature):
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(*args, **kwargs)
+    pass
 
 
 class FeatureLin(Feature):
@@ -260,7 +258,7 @@ class DataReader(object):
             header = header.replace(",", "\t").replace(";", "\t")
 
         features = [
-            Feature(*field.split(':'))
+            Feature(*field.split(':')).proxy
             for field in header.split("\t")
         ]
 
