@@ -77,8 +77,8 @@ class FeatureTest(unittest.TestCase):
         self.assertEqual(Feature("f1")(Object()), "value")
 
         cls = namedtuple("Object", ["f1", "f2"])
-        self.assertEqual(Feature("f1")(cls(0, 1)), 0)
-        self.assertEqual(Feature("f2")(cls(0, 1)), 1)
+        self.assertEqual(FeatureNom("f1")(cls(0, 1)), "0")
+        self.assertEqual(FeatureNom("f2")(cls(0, 1)), "1")
 
     def test__call__data(self):
         data = Data([[1, 2, 3],
@@ -96,7 +96,6 @@ class FeatureBinTest(unittest.TestCase):
 
     def test__and__(self):
         f = self.f1 & self.f2
-        self.assertEqual(f.title, "f1 AND f2")
         self.assertEqual(f(self.Object(0, 0)), 0)
         self.assertEqual(f(self.Object(0, 1)), 0)
         self.assertEqual(f(self.Object(1, 0)), 0)
@@ -104,7 +103,6 @@ class FeatureBinTest(unittest.TestCase):
 
     def test__or__(self):
         f = self.f1 | self.f2
-        self.assertEqual(f.title, "f1 OR f2")
         self.assertEqual(f(self.Object(0, 0)), 0)
         self.assertEqual(f(self.Object(0, 1)), 1)
         self.assertEqual(f(self.Object(1, 0)), 1)
@@ -112,7 +110,6 @@ class FeatureBinTest(unittest.TestCase):
 
     def test__xor__(self):
         f = self.f1 ^ self.f2
-        self.assertEqual(f.title, "f1 XOR f2")
         self.assertEqual(f(self.Object(0, 0)), 0)
         self.assertEqual(f(self.Object(0, 1)), 1)
         self.assertEqual(f(self.Object(1, 0)), 1)

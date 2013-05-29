@@ -2,6 +2,7 @@
 from collections import namedtuple
 import itertools
 import numpy as np
+import sympy
 
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
@@ -49,18 +50,15 @@ class Feature(object):
     DEFAULT_TYPE = str
 
     def __init__(self, title, scale=DEFAULT_SCALE):
-        self.title = title
+        # NOTE: convert_atoms {"title": convert function}
+        self.title = str(title)
+        self.formula = sympy.Symbol(self.title)
         self.scale = self.scale or scale
+        self._confert_atoms = {}
 
     @property
     def proxy(self):
         return self.__class__.__store__[self.scale](self.title)
-
-    def __str__(self):
-        return unicode(self).encode('utf8')
-
-    def __unicode__(self):
-        return "%s:%s" % (unicode(self.title), unicode(self.scale))
 
     def __eq__(self, other):
         return not(self < other or other < self)
@@ -77,10 +75,36 @@ class Feature(object):
 
     def __call__(self, objects):
         if isinstance(objects, Data):
-            # TODO: calculate features not in Data
+            # TODO: calculate features not in Data elementwise
             return objects[:, self]
         else:
-            return getattr(objects, self.title)
+            if self.formula.is_Atom:
+                result = getattr(objects, self.title)
+            else:
+                subs = {
+                    str(arg): self._confert_atoms[str(arg)](objects)
+                    for arg in self.formula.atoms()}
+                result = self.formula.subs(subs)
+
+            return self.convert(result)
+
+
+def _decoreate_lin_feature(f):
+    def wrapper(*args, **kwargs):
+        is_feature_in_args = any([isinstance(a, Feature) for a in args]) or \
+            any([isinstance(v, Feature) for v in kwargs.values()])
+
+        if is_feature_in_args:
+            args = [a.formula if isinstance(a, Feature) else a for a in args]
+            kwargs = {k: v.formula if isinstance(v, Feature) else v
+                      for k, v in kwargs.items()}
+            result = f(*args, **kwargs)
+            feature = FeatureLin(str(result))
+            feature.formula = result
+            return feature
+        else:
+            return f(*args, **kwargs)
+    return wrapper
 
 
 class FeatureNom(Feature):
@@ -89,22 +113,34 @@ class FeatureNom(Feature):
 
 class FeatureLin(Feature):
     def __neg__(self):
-        return NotImplementedError("Feature is not implemented yet")
-
-    def __pos__(self):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f.formula = -self.formula
+        f.title = str(f.formula)
+        return f
 
     def __add__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula + other.formula
+        return f
 
     def __sub__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula - other.formula
+        return f
 
     def __mul__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula * other.formula
+        return f
 
     def __div__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula / other.formula
+        return f
 
     def __mod__(self, other):
         return NotImplementedError("Feature is not implemented yet")
@@ -113,18 +149,30 @@ class FeatureLin(Feature):
         return NotImplementedError("Feature is not implemented yet")
 
     def __pow__(self, other, modulo=None):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureLin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula ** other.formula
+        return f
 
 
 class FeatureBin(Feature):
     def __and__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureBin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula & other.formula
+        return f
 
     def __xor__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureBin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula ^ other.formula
+        return f
 
     def __or__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        f = FeatureBin("")
+        f._confert_atoms.update({self.title: self, other.title: other})
+        f.formula = self.formula | other.formula
+        return f
 
 
 class FeatureRank(Feature):
