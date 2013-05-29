@@ -17,7 +17,6 @@ class FeatureMeta(type):
 
     def __new__(cls, name, bases, attrs):
         scale = name[len("Feature"):].lower()
-        print name, bases, attrs, scale
         class_ = super(FeatureMeta, cls).__new__(cls, name, bases, attrs)
         setattr(class_, "scale", scale)
         setattr(class_, "convert", classmethod(
