@@ -101,6 +101,12 @@ class FeatureBinTest(unittest.TestCase):
         self.assertEqual(f(self.Object(1, 0)), 0)
         self.assertEqual(f(self.Object(1, 1)), 1)
 
+    def test__and__constant(self):
+        f = self.f1 & True
+        self.assertEqual(f.formula, self.f1.formula)
+        f = self.f1 & False
+        self.assertEqual(f.formula, False)
+
     def test__or__(self):
         f = self.f1 | self.f2
         self.assertEqual(f(self.Object(0, 0)), 0)
@@ -108,12 +114,82 @@ class FeatureBinTest(unittest.TestCase):
         self.assertEqual(f(self.Object(1, 0)), 1)
         self.assertEqual(f(self.Object(1, 1)), 1)
 
+    def test__or__constant(self):
+        f = self.f1 | True
+        self.assertEqual(f.formula, True)
+        f = self.f1 | False
+        self.assertEqual(f.formula, self.f1.formula)
+
     def test__xor__(self):
         f = self.f1 ^ self.f2
         self.assertEqual(f(self.Object(0, 0)), 0)
         self.assertEqual(f(self.Object(0, 1)), 1)
         self.assertEqual(f(self.Object(1, 0)), 1)
         self.assertEqual(f(self.Object(1, 1)), 0)
+
+
+class FeatureLinTest(unittest.TestCase):
+    def setUp(self):
+        self.f1 = FeatureLin("f1")
+        self.f2 = FeatureLin("f2")
+        self.f3 = FeatureLin("f3")
+        self.Object = namedtuple("Object", ["f1", "f2", "f3"])
+
+    def test__neg__(self):
+        f = -self.f1
+        self.assertEqual(f(self.Object(1, 0, 0)), -1)
+
+    def test__add__(self):
+        f = self.f1 + self.f2
+        self.assertEqual(f(self.Object(2, 3, 7)), 5)
+
+        f = self.f1 + self.f2 + self.f3
+        self.assertEqual(f(self.Object(2, 3, 7)), 12)
+
+    def test__add__constant(self):
+        f = self.f1 + 1
+        self.assertEqual(f(self.Object(2, 0, 0)), 3)
+
+    def test__sub__(self):
+        f = self.f1 - self.f2
+        self.assertEqual(f(self.Object(2, 3, 7)), -1)
+
+        f = self.f1 - self.f2 - self.f3
+        self.assertEqual(f(self.Object(7, 3, 4)), 0)
+
+    def test__sub__constant(self):
+        f = self.f1 - 1
+        self.assertEqual(f(self.Object(3, 0, 0)), 2)
+
+    def test__mul__(self):
+        f = self.f1 * self.f2
+        self.assertEqual(f(self.Object(2, 3, 7)), 6)
+
+        f = self.f1 * self.f2 * self.f3
+        self.assertEqual(f(self.Object(2, 3, 7)), 42)
+
+    def test__mul__constant(self):
+        f = self.f1 * 3
+        self.assertEqual(f(self.Object(2, 0, 0)), 6)
+
+    def test__div__(self):
+        f = self.f1 / self.f2
+        self.assertEqual(f(self.Object(3, 2, 7)), 1.5)
+
+        f = self.f1 / self.f2 / self.f3
+        self.assertEqual(f(self.Object(30, 3, 2)), 5)
+
+    def test__div__constant(self):
+        f = self.f1 / 3
+        self.assertEqual(f(self.Object(6, 0, 0)), 2)
+
+    def test__pow__(self):
+        f = self.f1 ** self.f2
+        self.assertEqual(f(self.Object(2, 3, 7)), 8)
+
+    def test__pow__constant(self):
+        f = self.f1 ** 2
+        self.assertEqual(f(self.Object(3, 0, 0)), 9)
 
 
 class DataTest(unittest.TestCase):
