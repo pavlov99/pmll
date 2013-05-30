@@ -38,5 +38,10 @@ install:
       fi
 
     - sudo pip install -r requirements.txt --use-mirrors
+    - sudo pip install coveralls
+
 script:
-    - python setup.py test
+    - coverage run --source=pmll setup.py test
+
+after_success:
+        coveralls
