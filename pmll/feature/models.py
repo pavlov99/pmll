@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import sympy
 
+import operations
+
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
@@ -159,25 +161,13 @@ class FeatureLin(Feature):
 
 class FeatureBin(Feature):
     def __and__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula & other.formula
-        return f
+        return operations.And(self, other)
 
     def __xor__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula ^ other.formula
-        return f
+        return operations.Xor(self, other)
 
     def __or__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula | other.formula
-        return f
+        return operations.Or(self, other)
 
 
 class FeatureRank(Feature):

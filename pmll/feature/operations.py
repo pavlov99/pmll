@@ -2,26 +2,39 @@
 """Operations for Features. Methods are patched methods for sympy.core.Expr"""
 import sympy
 
-from ..features import Feature, FeatureLin
-
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
 
-def _decoreate_lin_feature(f):
-    """Decorate method for FeatureLin input/output."""
-    def wrapper(*args, **kwargs):
-        is_feature_in_args = any([isinstance(a, Feature) for a in args]) or \
-            any([isinstance(v, Feature) for v in kwargs.values()])
+def wrap_feature(feature_scale):
+    """Decorate method for Features with given scale."""
+    def decorate_function(f):
+        def wrapper(*args, **kwargs):
+            from ..feature import Feature
 
-        if is_feature_in_args:
-            args = [a.formula if isinstance(a, Feature) else a for a in args]
-            kwargs = {k: v.formula if isinstance(v, Feature) else v
-                      for k, v in kwargs.items()}
-            result = f(*args, **kwargs)
-            feature = FeatureLin(str(result))
-            feature.formula = result
-            return feature
-        else:
-            return f(*args, **kwargs)
-    return wrapper
+            fargs = [
+                feature for feature in list(args) + kwargs.values()
+                if isinstance(feature, Feature)
+            ]
+
+            if fargs:
+                args = tuple(a.formula if isinstance(a, Feature) else a
+                             for a in args)
+                kwargs = {k: v.formula if isinstance(v, Feature) else v
+                          for k, v in kwargs.items()}
+
+                result = f(*args, **kwargs)
+                feature = Feature("", feature_scale).proxy
+                feature.formula = result
+                feature._atoms_map.update(dict([
+                    (k, v) for arg in fargs for k, v in arg._atoms_map.items()
+                ]))
+                return feature
+            else:
+                return f(*args, **kwargs)
+        return wrapper
+    return decorate_function
+
+And = wrap_feature("bin")(sympy.And)
+Xor = wrap_feature("bin")(sympy.Xor)
+Or = wrap_feature("bin")(sympy.Or)
