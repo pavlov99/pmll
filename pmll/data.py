@@ -54,7 +54,7 @@ class Feature(object):
         self.title = str(title)
         self.formula = sympy.Symbol(self.title)
         self.scale = self.scale or scale
-        self._confert_atoms = {}
+        self._atoms_map = {self.title: self}
 
     @property
     def proxy(self):
@@ -82,8 +82,9 @@ class Feature(object):
                 result = getattr(objects, self.title)
             else:
                 subs = {
-                    str(arg): self._confert_atoms[str(arg)](objects)
-                    for arg in self.formula.atoms()}
+                    str(arg): self._atoms_map[str(arg)](objects)
+                    for arg in self.formula.atoms()
+                    if isinstance(arg, sympy.Symbol)}
                 result = self.formula.subs(subs)
 
             return self.convert(result)
@@ -115,30 +116,35 @@ class FeatureLin(Feature):
     def __neg__(self):
         f = FeatureLin("")
         f.formula = -self.formula
+        f._atoms_map.update(self._atoms_map)
         f.title = str(f.formula)
         return f
 
     def __add__(self, other):
         f = FeatureLin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula + other.formula
         return f
 
     def __sub__(self, other):
         f = FeatureLin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula - other.formula
         return f
 
     def __mul__(self, other):
         f = FeatureLin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula * other.formula
         return f
 
     def __div__(self, other):
         f = FeatureLin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula / other.formula
         return f
 
@@ -150,7 +156,8 @@ class FeatureLin(Feature):
 
     def __pow__(self, other, modulo=None):
         f = FeatureLin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula ** other.formula
         return f
 
@@ -158,19 +165,22 @@ class FeatureLin(Feature):
 class FeatureBin(Feature):
     def __and__(self, other):
         f = FeatureBin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula & other.formula
         return f
 
     def __xor__(self, other):
         f = FeatureBin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula ^ other.formula
         return f
 
     def __or__(self, other):
         f = FeatureBin("")
-        f._confert_atoms.update({self.title: self, other.title: other})
+        f._atoms_map.update(
+            dict(self._atoms_map.items() + other._atoms_map.items()))
         f.formula = self.formula | other.formula
         return f
 
