@@ -127,6 +127,14 @@ class FeatureBinTest(unittest.TestCase):
         self.assertEqual(f(self.Object(1, 0)), 1)
         self.assertEqual(f(self.Object(1, 1)), 0)
 
+    def test_complex(self):
+        g = self.f1 | self.f2
+        f = g & self.f2
+        self.assertEqual(f(self.Object(0, 0)), 0)
+        self.assertEqual(f(self.Object(0, 1)), 1)
+        self.assertEqual(f(self.Object(1, 0)), 0)
+        self.assertEqual(f(self.Object(1, 1)), 1)
+
 
 class FeatureLinTest(unittest.TestCase):
     def setUp(self):
