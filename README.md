@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/pavlov99/pmll.png?branch=master)](https://travis-ci.org/pavlov99/pmll)
 [![Downloads](https://pypip.in/d/pmll/badge.png)](https://crate.io/package/pmll)
+[![Downloads](https://pypip.in/v/pmll/badge.png)](https://crate.io/package/pmll)
 
 Inspired by: R, Matlab, orange
 
