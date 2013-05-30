@@ -2,191 +2,11 @@
 from collections import namedtuple
 import itertools
 import numpy as np
-import sympy
+
+from .feature import Feature
 
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
-
-
-class FeatureMeta(type):
-    """MetaClass for Features
-
-    For each feature defines its scala during class creation. Adds classmethod
-    to convert value according to feature type
-    """
-    __store__ = dict()
-
-    def __new__(cls, name, bases, attrs):
-        scale = name[len("Feature"):].lower()
-        class_ = super(FeatureMeta, cls).__new__(cls, name, bases, attrs)
-        setattr(class_, "scale", scale)
-        setattr(class_, "convert", classmethod(
-            lambda cls, x: Feature.FEATURE_TYPE_MAPPER.get(
-                scale, Feature.DEFAULT_TYPE)(x)))
-        cls.__store__[scale] = class_
-        return class_
-
-
-class Feature(object):
-    """Feture representation
-    Converts feature value according to one of the following types:
-
-    nom:  nominal value represented by string
-    lin:  float number in linear scale
-    rank: float number, arithmetic operations are not supported
-    bin:  binary format, true/false or 1/0
-
-    Feature does not know about data, does not have any mean or deviation.
-    """
-    __metaclass__ = FeatureMeta
-
-    FEATURE_TYPE_MAPPER = {
-        "nom": str,
-        "lin": float,
-        "rank": float,
-        "bin": bool,
-    }
-    DEFAULT_SCALE = "nom"
-    DEFAULT_TYPE = str
-
-    def __init__(self, title, scale=DEFAULT_SCALE):
-        # NOTE: convert_atoms {"title": convert function}
-        self.title = str(title)
-        self.formula = sympy.Symbol(self.title)
-        self.scale = self.scale or scale
-        self._atoms_map = {self.title: self}
-
-    @property
-    def proxy(self):
-        return self.__class__.__store__[self.scale](self.title)
-
-    def __eq__(self, other):
-        return not(self < other or other < self)
-
-    def __ne__(self, other):
-        return not (self == other)
-
-    def __lt__(self, other):
-        """Helper method to order features"""
-        return (self.scale, self.title) < (other.scale, other.title)
-
-    def __hash__(self):
-        return hash((self.scale, self.title))
-
-    def __call__(self, objects):
-        if isinstance(objects, Data):
-            # TODO: calculate features not in Data elementwise
-            return objects[:, self]
-        else:
-            if self.formula.is_Atom:
-                result = getattr(objects, self.title)
-            else:
-                subs = {
-                    str(arg): self._atoms_map[str(arg)](objects)
-                    for arg in self.formula.atoms()
-                    if isinstance(arg, sympy.Symbol)}
-                result = self.formula.subs(subs)
-
-            return self.convert(result)
-
-
-def _decoreate_lin_feature(f):
-    def wrapper(*args, **kwargs):
-        is_feature_in_args = any([isinstance(a, Feature) for a in args]) or \
-            any([isinstance(v, Feature) for v in kwargs.values()])
-
-        if is_feature_in_args:
-            args = [a.formula if isinstance(a, Feature) else a for a in args]
-            kwargs = {k: v.formula if isinstance(v, Feature) else v
-                      for k, v in kwargs.items()}
-            result = f(*args, **kwargs)
-            feature = FeatureLin(str(result))
-            feature.formula = result
-            return feature
-        else:
-            return f(*args, **kwargs)
-    return wrapper
-
-
-class FeatureNom(Feature):
-    pass
-
-
-class FeatureLin(Feature):
-    def __neg__(self):
-        f = FeatureLin("")
-        f.formula = -self.formula
-        f._atoms_map.update(self._atoms_map)
-        f.title = str(f.formula)
-        return f
-
-    def __add__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula + other.formula
-        return f
-
-    def __sub__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula - other.formula
-        return f
-
-    def __mul__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula * other.formula
-        return f
-
-    def __div__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula / other.formula
-        return f
-
-    def __mod__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
-
-    def __divmod__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
-
-    def __pow__(self, other, modulo=None):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula ** other.formula
-        return f
-
-
-class FeatureBin(Feature):
-    def __and__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula & other.formula
-        return f
-
-    def __xor__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula ^ other.formula
-        return f
-
-    def __or__(self, other):
-        f = FeatureBin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula | other.formula
-        return f
-
-
-class FeatureRank(Feature):
-    pass
 
 
 class Data(object):
@@ -198,7 +18,8 @@ class Data(object):
         + (__add__)     adds features. It is commutative, feature order does
                         not matter
         .extend(Data)   adds elements with the same features. Object order
-                        could matter. TODO: may be easier create new data?
+                        could matter.
+                        TODO: may be easier create new data?
     """
     def __init__(self, objects, features=None):
         """Init data class
@@ -209,8 +30,8 @@ class Data(object):
             raise ValueError("Features should be unique")
 
         self.objects = np.matrix([list(obj) for obj in objects])
-        self.features = features or [Feature("f%s" % i)
-                                     for i in range(self.objects.shape[1])]
+        self.features = features or [
+            Feature("f%s" % i) for i in range(self.objects.shape[1])]
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
@@ -308,7 +129,8 @@ class DataReader(object):
     def __parse_header(cls, header):
         heared_prefix = "# "
         if not header.startswith(heared_prefix):
-            msg = 'Bad header format. Should starts from "%s"' % heared_prefix
+            msg = "Bad header format. Should starts from {0}".format(
+                heared_prefix)
             raise ValueError(msg)
         else:
             header = header[len(heared_prefix):].split('#', 1)[0].rstrip()

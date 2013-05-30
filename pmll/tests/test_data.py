@@ -5,6 +5,9 @@ import unittest
 from ..data import (
     Data,
     DataReader,
+)
+
+from ..feature import (
     Feature,
     FeatureBin,
     FeatureLin,
