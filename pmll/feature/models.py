@@ -118,45 +118,22 @@ class FeatureLin(Feature):
         return f
 
     def __add__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula + other.formula
-        return f
+        return operations.Add(self, other)
 
     def __sub__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula - other.formula
-        return f
+        return operations.Add(self, -other)
 
     def __mul__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula * other.formula
-        return f
+        return operations.Mul(self, other)
 
     def __div__(self, other):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula / other.formula
-        return f
-
-    def __mod__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
-
-    def __divmod__(self, other):
-        return NotImplementedError("Feature is not implemented yet")
+        factor = operations.Inverse(other) \
+            if isinstance(other, Feature) \
+            else 1.0 / other
+        return operations.Mul(self, factor)
 
     def __pow__(self, other, modulo=None):
-        f = FeatureLin("")
-        f._atoms_map.update(
-            dict(self._atoms_map.items() + other._atoms_map.items()))
-        f.formula = self.formula ** other.formula
-        return f
+        return operations.Pow(self, other)
 
 
 class FeatureBin(Feature):

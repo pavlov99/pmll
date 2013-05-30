@@ -38,3 +38,8 @@ def wrap_feature(feature_scale):
 And = wrap_feature("bin")(sympy.And)
 Xor = wrap_feature("bin")(sympy.Xor)
 Or = wrap_feature("bin")(sympy.Or)
+
+Add = wrap_feature("lin")(sympy.Add)
+Mul = wrap_feature("lin")(sympy.Mul)
+Pow = wrap_feature("lin")(sympy.Pow)
+Inverse = wrap_feature("lin")(sympy.Inverse)
