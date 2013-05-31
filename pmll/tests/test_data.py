@@ -110,6 +110,12 @@ class FeatureBinTest(unittest.TestCase):
         f = self.f1 & False
         self.assertEqual(f.formula, False)
 
+    def test__rand__constant(self):
+        f = True & self.f1
+        self.assertEqual(f.formula, self.f1.formula)
+        f = False & self.f1
+        self.assertEqual(f.formula, False)
+
     def test__or__(self):
         f = self.f1 | self.f2
         self.assertEqual(f(self.Object(0, 0)), 0)
@@ -123,12 +129,32 @@ class FeatureBinTest(unittest.TestCase):
         f = self.f1 | False
         self.assertEqual(f.formula, self.f1.formula)
 
+    def test__ror__constant(self):
+        f = True | self.f1
+        self.assertEqual(f.formula, True)
+        f = False | self.f1
+        self.assertEqual(f.formula, self.f1.formula)
+
     def test__xor__(self):
         f = self.f1 ^ self.f2
         self.assertEqual(f(self.Object(0, 0)), 0)
         self.assertEqual(f(self.Object(0, 1)), 1)
         self.assertEqual(f(self.Object(1, 0)), 1)
         self.assertEqual(f(self.Object(1, 1)), 0)
+
+    def test__xor__constant(self):
+        f = self.f1 ^ True
+        self.assertEqual(f(self.Object(0, 0)), True)
+        self.assertEqual(f(self.Object(1, 0)), False)
+        f = self.f1 ^ False
+        self.assertEqual(f.formula, self.f1.formula)
+
+    def test__rxor__constant(self):
+        f = True ^ self.f1
+        self.assertEqual(f(self.Object(0, 0)), True)
+        self.assertEqual(f(self.Object(1, 0)), False)
+        f = False ^ self.f1
+        self.assertEqual(f.formula, self.f1.formula)
 
     def test_complex(self):
         g = self.f1 | self.f2
