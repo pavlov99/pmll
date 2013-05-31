@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/pavlov99/pmll.png?branch=master)](https://travis-ci.org/pavlov99/pmll)
 [![Coverage Status](https://coveralls.io/repos/pavlov99/pmll/badge.png)](https://coveralls.io/r/pavlov99/pmll)
 [![Downloads](https://pypip.in/v/pmll/badge.png)](https://crate.io/packages/pmll)
-[![Downloads](https://pypip.in/d/pmll/badge.png)](https://crate.io/packagew/pmll)
+[![Downloads](https://pypip.in/d/pmll/badge.png)](https://crate.io/packages/pmll)
 
 Inspired by: R, Matlab, orange
 
