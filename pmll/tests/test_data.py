@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
+import math
 import unittest
 
 from ..data import (
@@ -353,6 +354,22 @@ class DataTest(unittest.TestCase):
 
     def test_vif(self):
         self.assertEqual(Data([(0, 1), (1, 2)]).vif, [1.25, 0.25])
+
+    def test_stat(self):
+        features = [FeatureBin("f1"), FeatureNom("f2"),
+                    FeatureRank("f3"), FeatureLin("f4")]
+        data = Data([[True, "0", 0, 0.0],
+                     [True, "0", 1, -1.0],
+                     [False, "1", 2, 1.0]], features=features)
+        expected = {
+            FeatureBin("f1"): {True: 2, False: 1},
+            FeatureNom("f2"): {"0": 2, "1": 1},
+            FeatureRank("f3"): {0: 1, 1: 1, 2: 1},
+            FeatureLin("f4"): {"mean": 0.0, "var": 2.0 / 3,
+                               "std": math.sqrt(2.0 / 3)}
+        }
+
+        self.assertEqual(data.stat, expected)
 
 
 class DataReaderTest(unittest.TestCase):
