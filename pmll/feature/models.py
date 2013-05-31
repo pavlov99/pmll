@@ -140,11 +140,20 @@ class FeatureBin(Feature):
     def __and__(self, other):
         return operations.And(self, other)
 
+    def __rand__(self, other):
+        return self.__and__(other)
+
     def __xor__(self, other):
         return operations.Xor(self, other)
 
+    def __rxor__(self, other):
+        return self.__xor__(other)
+
     def __or__(self, other):
         return operations.Or(self, other)
+
+    def __ror__(self, other):
+        return self.__or__(other)
 
 
 class FeatureRank(Feature):
