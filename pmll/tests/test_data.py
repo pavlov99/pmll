@@ -90,6 +90,18 @@ class FeatureTest(unittest.TestCase):
         self.assertEqual(data.features[1](data), data[:, 1])
         self.assertEqual(data.features[2](data), data[:, 2])
 
+    def test__call__data__new_feature(self):
+        f1, f2 = FeatureLin("f1"), FeatureLin("f2")
+        data = Data([[2, 3],
+                     [0, 1]], features=[f1, f2])
+        self.assertEqual(
+            (f1 + f2)(data),
+            Data([[5], [1]], features=[f1 + f2]))
+
+        self.assertEqual(
+            (f1 * f2)(data),
+            Data([[6], [0]], features=[f1 * f2]))
+
 
 class FeatureBinTest(unittest.TestCase):
     def setUp(self):

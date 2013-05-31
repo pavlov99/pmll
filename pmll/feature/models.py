@@ -90,8 +90,10 @@ class Feature(object):
         from ..data import Data
 
         if isinstance(objects, Data):
-            # TODO: calculate features not in Data elementwise
-            return objects[:, self]
+            if self in objects.features:
+                return objects[:, self]
+            else:
+                return Data([[self(o)] for o in objects], features=[self])
         else:
             if self.formula.is_Atom:
                 result = getattr(objects, self.title)
