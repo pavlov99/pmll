@@ -120,11 +120,20 @@ class FeatureLin(Feature):
     def __add__(self, other):
         return operations.Add(self, other)
 
+    def __radd__(self, other):
+        return self.__add__(other)
+
     def __sub__(self, other):
         return operations.Add(self, -other)
 
+    def __rsub__(self, other):
+        return -self.__sub__(other)
+
     def __mul__(self, other):
         return operations.Mul(self, other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
     def __div__(self, other):
         factor = operations.Inverse(other) \
@@ -132,8 +141,18 @@ class FeatureLin(Feature):
             else 1.0 / other
         return operations.Mul(self, factor)
 
+    def __rdiv__(self, other):
+        return other * operations.Inverse(self)
+
     def __pow__(self, other, modulo=None):
         return operations.Pow(self, other)
+
+    def __rpow__(self, other, modulo=None):
+        f = FeatureLin("")
+        f.formula = other ** self.formula
+        f._atoms_map.update(self._atoms_map)
+        f.title = str(f.formula)
+        return f
 
 
 class FeatureBin(Feature):
