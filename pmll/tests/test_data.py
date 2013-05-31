@@ -187,6 +187,10 @@ class FeatureLinTest(unittest.TestCase):
         f = self.f1 + 1
         self.assertEqual(f(self.Object(2, 0, 0)), 3)
 
+    def test__radd__constant(self):
+        f = 1 + self.f1
+        self.assertEqual(f(self.Object(2, 0, 0)), 3)
+
     def test__sub__(self):
         f = self.f1 - self.f2
         self.assertEqual(f(self.Object(2, 3, 7)), -1)
@@ -198,6 +202,10 @@ class FeatureLinTest(unittest.TestCase):
         f = self.f1 - 1
         self.assertEqual(f(self.Object(3, 0, 0)), 2)
 
+    def test__rsub__constant(self):
+        f = 1 - self.f1
+        self.assertEqual(f(self.Object(3, 0, 0)), -2)
+
     def test__mul__(self):
         f = self.f1 * self.f2
         self.assertEqual(f(self.Object(2, 3, 7)), 6)
@@ -207,6 +215,10 @@ class FeatureLinTest(unittest.TestCase):
 
     def test__mul__constant(self):
         f = self.f1 * 3
+        self.assertEqual(f(self.Object(2, 0, 0)), 6)
+
+    def test__rmul__constant(self):
+        f = 3 * self.f1
         self.assertEqual(f(self.Object(2, 0, 0)), 6)
 
     def test__div__(self):
@@ -220,6 +232,10 @@ class FeatureLinTest(unittest.TestCase):
         f = self.f1 / 3
         self.assertEqual(f(self.Object(6, 0, 0)), 2)
 
+    def test__rdiv__constant(self):
+        f = 3 / self.f1
+        self.assertEqual(f(self.Object(6, 0, 0)), 0.5)
+
     def test__pow__(self):
         f = self.f1 ** self.f2
         self.assertEqual(f(self.Object(2, 3, 7)), 8)
@@ -227,6 +243,10 @@ class FeatureLinTest(unittest.TestCase):
     def test__pow__constant(self):
         f = self.f1 ** 2
         self.assertEqual(f(self.Object(3, 0, 0)), 9)
+
+    def test__rpow__constant(self):
+        f = 2 ** self.f1
+        self.assertEqual(f(self.Object(3, 0, 0)), 8)
 
 
 class DataTest(unittest.TestCase):
