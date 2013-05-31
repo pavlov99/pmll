@@ -11,6 +11,7 @@ try:
 except ImportError:
     pass
 
+
 def read(fname):
     try:
         return open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -36,13 +37,15 @@ setup(
 
     # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Environment :: Console",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
+        "Operating System :: OS Independent",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.2",
-        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries",
     ],
     license="MIT",
