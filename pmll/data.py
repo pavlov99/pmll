@@ -35,11 +35,11 @@ class Data(object):
         if features and len(features) > len(set(features)):
             raise ValueError("Features are intersected, but should be unique")
 
-        dtype = np.str if features is None else [
-            (f.title, FEATURE_TYPE_MAP[f.scale]) for f in features]
+        objects = list(objects)
+        self.features = features or \
+            [Feature("f".format(i)).proxy for i in range(len(objects[0]))]
+        dtype = [(f.title, FEATURE_TYPE_MAP[f.scale]) for f in self.features]
         self.objects = np.matrix([tuple(obj) for obj in objects], dtype=dtype)
-        self.features = features or [
-            Feature("f%s" % i) for i in range(self.objects.shape[1])]
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
@@ -90,10 +90,8 @@ class Data(object):
         if self.objects.shape[0] != other.objects.shape[0]:
             raise ValueError("Number of objects should be equal")
 
-        features = self.features + other.features
-
         return Data(np.hstack([self.objects, other.objects]).tolist(),
-                    features=features)
+                    features=self.features + other.features)
 
     @property
     def vif(self):
