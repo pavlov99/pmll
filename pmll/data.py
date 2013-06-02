@@ -14,6 +14,12 @@ class Data(object):
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
 
+    Attributes:
+        features    list of features. If features are not provided, they are
+                    generated as Nominal (string type).
+        objects     np.array of objects. Objects could consist of strings, so
+                    they are not matrix, they dont support matrix operations.
+
     There are operation to extend current instance:
         + (__add__)     adds features. It is commutative, feature order does
                         not matter
@@ -26,20 +32,16 @@ class Data(object):
         objects: convertable to list instances
         features: list of Features
         """
-        FEATURE_TYPE_MAP = {
-            "nom": np.dtype((str, 16)),
-            "bin": np.dtype(bool),
-            "lin": np.dtype(float),
-            "rank": np.dtype(int),
-        }
+        fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
+
         if features and len(features) > len(set(features)):
             raise ValueError("Features are intersected, but should be unique")
 
         objects = list(objects)
         self.features = features or \
-            [Feature("f".format(i)).proxy for i in range(len(objects[0]))]
-        dtype = [(f.title, FEATURE_TYPE_MAP[f.scale]) for f in self.features]
-        self.objects = np.matrix([tuple(obj) for obj in objects], dtype=dtype)
+            [Feature("f{0}".format(i)).proxy for i in range(len(objects[0]))]
+        dtype = np.dtype([fdtype(f) for f in self.features])
+        self.objects = np.array([tuple(obj) for obj in objects], dtype=dtype)
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(

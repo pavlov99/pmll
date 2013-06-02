@@ -20,8 +20,8 @@ class FeatureMeta(type):
         class_ = super(FeatureMeta, cls).__new__(cls, name, bases, attrs)
         setattr(class_, "scale", scale)
         setattr(class_, "convert", classmethod(
-            lambda cls, x: Feature.FEATURE_TYPE_MAPPER.get(
-                scale, Feature.DEFAULT_TYPE)(x)))
+            lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
+                scale, Feature.DEFAULT_TYPE)[0](x)))
         cls.__store__[scale] = class_
         return class_
 
@@ -39,11 +39,12 @@ class Feature(object):
     """
     __metaclass__ = FeatureMeta
 
-    FEATURE_TYPE_MAPPER = {
-        "nom": str,
-        "lin": float,
-        "rank": float,
-        "bin": bool,
+    # Map type to type (python_type, max_value_lenght)
+    FEATURE_TYPE_MAP = {
+        "nom": (str, 16),
+        "lin": (float, ),
+        "rank": (float, ),
+        "bin": (bool, ),
     }
     DEFAULT_SCALE = "nom"
     DEFAULT_TYPE = str
