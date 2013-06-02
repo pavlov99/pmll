@@ -48,6 +48,11 @@ class Data(object):
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
+    @property
+    def m(self):
+        """Return matrix of objects if features are linear"""
+        return np.matrix()
+
     def __eq__(self, other):
         """Check equality of datasets
 
@@ -67,24 +72,23 @@ class Data(object):
 
     def __getitem__(self, key):
         # TODO: Add feature sclice (given list of features return Data)
-        features = self.features
+        if not isinstance(key, tuple):
+            key = (key, slice(None, None, None))
 
-        if isinstance(key, tuple):
-            # Convert second index to slice
-            if isinstance(key[1], Feature):
-                key = (key[0], self.features.index(key[1])) + key[2:]
+        # Convert second index to slice
+        if isinstance(key[1], Feature):
+            key = (key[0], self.features.index(key[1])) + key[2:]
 
-            if isinstance(key[1], int):
-                key = (key[0], slice(key[1], key[1] + 1)) + key[2:]
+        if isinstance(key[1], int):
+            key = (key[0], slice(key[1], key[1] + 1)) + key[2:]
 
-            features = self.features.__getitem__(key[1])
+        features = self.features.__getitem__(key[1])
 
-        objects = self.objects.__getitem__(key).tolist()
+        objects = self.objects.__getitem__(key[0]).tolist()
         Object = namedtuple('Object', [f.title for f in features])
 
-        if isinstance(key, int) or \
-           (isinstance(key, tuple) and isinstance(key[0], int)):
-            return Object(*objects[0])
+        if isinstance(key[0], int):
+            return Object(*objects)
         else:
             return Data(objects, features)
 
