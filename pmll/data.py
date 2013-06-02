@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import namedtuple
+from collections import namedtuple, Counter
 import itertools
 import numpy as np
 
@@ -26,10 +26,18 @@ class Data(object):
         objects: convertable to list instances
         features: list of Features
         """
+        FEATURE_TYPE_MAP = {
+            "nom": np.dtype((str, 16)),
+            "bin": np.dtype(bool),
+            "lin": np.dtype(float),
+            "rank": np.dtype(int),
+        }
         if features and len(features) > len(set(features)):
             raise ValueError("Features should be unique")
 
-        self.objects = np.matrix([list(obj) for obj in objects])
+        dtype = np.str if features is None else [
+            (f.title, FEATURE_TYPE_MAP[f.scale]) for f in features]
+        self.objects = np.matrix([tuple(obj) for obj in objects], dtype=dtype)
         self.features = features or [
             Feature("f%s" % i) for i in range(self.objects.shape[1])]
 
@@ -118,6 +126,12 @@ class Data(object):
             vif.append(float(v))
 
         return vif
+
+    @property
+    def stat(self):
+        return {
+            feature: dict(Counter(values.tolist()[0]))
+            for feature, values in zip(self.features, self.objects.T)}
 
 
 class DataReader(object):
