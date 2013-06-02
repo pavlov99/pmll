@@ -33,7 +33,7 @@ class Data(object):
             "rank": np.dtype(int),
         }
         if features and len(features) > len(set(features)):
-            raise ValueError("Features should be unique")
+            raise ValueError("Features are intersected, but should be unique")
 
         dtype = np.str if features is None else [
             (f.title, FEATURE_TYPE_MAP[f.scale]) for f in features]
@@ -91,8 +91,6 @@ class Data(object):
             raise ValueError("Number of objects should be equal")
 
         features = self.features + other.features
-        if len(features) > len(set(features)):
-            raise ValueError("Features are intersected")
 
         return Data(np.hstack([self.objects, other.objects]).tolist(),
                     features=features)
