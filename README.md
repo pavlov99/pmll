@@ -9,6 +9,8 @@ Inspired by: R, Matlab, orange
 
 Author: Kirill Pavlov <mailto:kirill.pavlov@phystech.edu>
 
+Documentation: [https://pmll.readthedocs.org](https://pmll.readthedocs.org)
+
 Library aimed to bring simplicity to machime learning algorithms usage.
 
 ## Installation
