@@ -78,7 +78,7 @@ class FeatureTest(unittest.TestCase):
     def test__call__object(self):
         class Object(object):
             f1 = "value"
-        self.assertEqual(Feature("f1")(Object()), "value")
+        self.assertEqual(FeatureNom("f1")(Object()), "value")
 
         cls = namedtuple("Object", ["f1", "f2"])
         self.assertEqual(FeatureNom("f1")(cls(0, 1)), "0")
