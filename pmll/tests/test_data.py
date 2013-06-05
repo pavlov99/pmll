@@ -317,7 +317,7 @@ class DataTest(unittest.TestCase):
 
     def test_getitem_many(self):
         data = Data([(0, 1, 2)])
-        self.assertEqual(data[:, 0:1], Data([(0, 1)], data.features[0:1]))
+        self.assertEqual(data[:, 0:2], Data([(0, 1)], data.features[0:2]))
         self.assertEqual(data[:, :], data)
 
     def test_getitem_feature(self):
