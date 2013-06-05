@@ -87,6 +87,7 @@ class Data(object):
         if isinstance(key[0], int):
             return Object(*objects)
         else:
+            objects = [list(o).__getitem__(key[1]) for o in objects]
             return Data(objects, features)
 
     def __add__(self, other):
