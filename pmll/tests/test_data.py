@@ -352,7 +352,8 @@ class DataTest(unittest.TestCase):
             Data([(0, 1, 2), (1, 2, 3)]).vif
 
     def test_vif(self):
-        self.assertEqual(Data([(0, 1), (1, 2)]).vif, [1.25, 0.25])
+        data = Data([(0, 1), (1, 2)], [FeatureLin("f1"), FeatureLin("f2")])
+        self.assertEqual(data.vif, [1.25, 0.25])
 
     def test_stat(self):
         features = [FeatureBin("f1"), FeatureNom("f2"),

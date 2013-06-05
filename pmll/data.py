@@ -126,12 +126,11 @@ class Data(object):
             """
             return np.asarray(y - x * (x.T * x) ** (-1) * x.T * y)
 
-        vif = []
+        objects, vif = self.matrix, []
         for i in range(len(self.features)):
             rows = range(i) + range(i + 1, len(self.features))
-            residuals = __regression_residuals(
-                self.objects[:, rows], self.objects[:, i])
-            v = self.objects[:, i].std() ** 2 / sum(residuals ** 2)
+            residuals = __regression_residuals(objects[:, rows], objects[:, i])
+            v = objects[:, i].std() ** 2 / sum(residuals ** 2)
             vif.append(float(v))
 
         return vif
