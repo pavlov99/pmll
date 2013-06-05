@@ -59,9 +59,10 @@ class Data(object):
         data1 == data2 if they have the same features and
         objects being sorted according to data1.features are equal.
         """
-        return set(self.features) == set(other.features) and \
-            zip(self.objects[f.title] for f in sorted(self.features)) == \
-            zip(other.objects[f.title] for f in sorted(other.features))
+        l1 = zip(*[list(self.objects[f.title]) for f in sorted(self.features)])
+        l2 = zip(*[
+            list(other.objects[f.title])for f in sorted(other.features)])
+        return set(self.features) == set(other.features) and l1 == l2
 
     def __ne__(self, other):
         return not (self == other)
