@@ -109,10 +109,10 @@ class Data(object):
     @property
     def vif(self):
         """Calculate variance inflation factor"""
-        if len(self.features) < 2:
+        if self.nfeatures < 2:
             raise ValueError("Objects should have at least 2 features")
 
-        if self.objects.shape[0] < len(self.features):
+        if self.nobjects < self.nfeatures:
             raise ValueError("Number of objects should be more than features")
 
         def __regression_residuals(x, y):
