@@ -296,7 +296,6 @@ class DataTest(unittest.TestCase):
         objects2 = [(1, 0)]
         features1 = [Feature("f1"), Feature("f2")]
         features2 = [Feature("f2"), Feature("f1")]
-        #import ipdb; ipdb.set_trace()
         self.assertEqual(Data(objects1), Data(objects1))
         self.assertEqual(Data(objects1, features1), Data(objects1, features1))
         self.assertEqual(Data(objects1, features1), Data(objects2, features2))
