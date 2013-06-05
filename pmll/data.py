@@ -14,6 +14,12 @@ class Data(object):
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
 
+    Attributes:
+        features    list of features. If features are not provided, they are
+                    generated as Nominal (string type).
+        objects     np.array of objects. Objects could consist of strings, so
+                    they are not matrix, they dont support matrix operations.
+
     There are operation to extend current instance:
         + (__add__)     adds features. It is commutative, feature order does
                         not matter
@@ -26,76 +32,87 @@ class Data(object):
         objects: convertable to list instances
         features: list of Features
         """
-        if features and len(features) > len(set(features)):
-            raise ValueError("Features should be unique")
+        fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
 
-        self.objects = np.matrix([list(obj) for obj in objects])
-        self.features = features or [
-            Feature("f%s" % i) for i in range(self.objects.shape[1])]
+        if features and len(features) > len(set(features)):
+            raise ValueError("Features are intersected, but should be unique")
+
+        objects = list(objects)
+        self.features = features or \
+            [Feature("f{0}".format(i)).proxy for i in range(len(objects[0]))]
+        dtype = np.dtype([fdtype(f) for f in self.features])
+        self.objects = np.array([tuple(obj) for obj in objects], dtype=dtype)
+
+        self.nobjects = self.objects.shape[0]
+        self.nfeatures = len(self.features)
+        self.__matrix = None
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
+    @property
+    def matrix(self):
+        """Return matrix of objects if features are linear"""
+        if self.__matrix is None:
+            if not all(f.scale == "lin" for f in self.features):
+                raise ValueError("Could convert only for lenear features")
+            self.__matrix = np.matrix(self.objects.tolist())
+        return self.__matrix
+
     def __eq__(self, other):
         """Check equality of datasets
 
         data1 == data2 if they have the same features and
-        objects being sorted according to data1.features are equal
+        objects being sorted according to data1.features are equal.
         """
-        indexes_self, features_self =\
-            zip(*sorted(enumerate(self.features), key=lambda x: x[1]))
-        indexes_other, features_other =\
-            zip(*sorted(enumerate(other.features), key=lambda x: x[1]))
-        return features_self == features_other and (
-            self.objects[:, np.array(indexes_self)] ==
-            other.objects[:, np.array(indexes_other)]).all()
+        l1 = zip(*[list(self.objects[f.title]) for f in sorted(self.features)])
+        l2 = zip(*[
+            list(other.objects[f.title])for f in sorted(other.features)])
+        return set(self.features) == set(other.features) and l1 == l2
 
     def __ne__(self, other):
         return not (self == other)
 
     def __getitem__(self, key):
         # TODO: Add feature sclice (given list of features return Data)
-        features = self.features
+        if not isinstance(key, tuple):
+            key = (key, slice(None, None, None))
 
-        if isinstance(key, tuple):
-            # Convert second index to slice
-            if isinstance(key[1], Feature):
-                key = (key[0], self.features.index(key[1])) + key[2:]
+        # Convert second index to slice
+        if isinstance(key[1], Feature):
+            key = (key[0], self.features.index(key[1])) + key[2:]
 
-            if isinstance(key[1], int):
-                key = (key[0], slice(key[1], key[1] + 1)) + key[2:]
+        if isinstance(key[1], int):
+            key = (key[0], slice(key[1], key[1] + 1)) + key[2:]
 
-            features = self.features.__getitem__(key[1])
+        features = self.features.__getitem__(key[1])
 
-        objects = self.objects.__getitem__(key).tolist()
+        objects = self.objects.__getitem__(key[0]).tolist()
         Object = namedtuple('Object', [f.title for f in features])
 
-        if isinstance(key, int) or \
-           (isinstance(key, tuple) and isinstance(key[0], int)):
-            return Object(*objects[0])
+        if isinstance(key[0], int):
+            return Object(*objects)
         else:
+            objects = [list(o).__getitem__(key[1]) for o in objects]
             return Data(objects, features)
 
     def __add__(self, other):
         if self.objects.shape[0] != other.objects.shape[0]:
             raise ValueError("Number of objects should be equal")
 
-        features = self.features + other.features
-        if len(features) > len(set(features)):
-            raise ValueError("Features are intersected")
-
-        return Data(np.hstack([self.objects, other.objects]).tolist(),
-                    features=features)
+        objects = [list(o1) + list(o2) for o1, o2
+                   in zip(self.objects, other.objects)]
+        return Data(objects, features=self.features + other.features)
 
     @property
     def vif(self):
         """Calculate variance inflation factor"""
-        if len(self.features) < 2:
+        if self.nfeatures < 2:
             raise ValueError("Objects should have at least 2 features")
 
-        if self.objects.shape[0] < self.objects.shape[1]:
+        if self.nobjects < self.nfeatures:
             raise ValueError("Number of objects should be more than features")
 
         def __regression_residuals(x, y):
@@ -109,15 +126,20 @@ class Data(object):
             """
             return np.asarray(y - x * (x.T * x) ** (-1) * x.T * y)
 
-        vif = []
+        objects, vif = self.matrix, []
         for i in range(len(self.features)):
             rows = range(i) + range(i + 1, len(self.features))
-            residuals = __regression_residuals(
-                self.objects[:, rows], self.objects[:, i])
-            v = self.objects[:, i].std() ** 2 / sum(residuals ** 2)
+            residuals = __regression_residuals(objects[:, rows], objects[:, i])
+            v = objects[:, i].std() ** 2 / sum(residuals ** 2)
             vif.append(float(v))
 
         return vif
+
+    @property
+    def stat(self):
+        return {
+            feature: feature.getstat(self.objects[feature.title])
+            for feature in self.features}
 
 
 class DataReader(object):

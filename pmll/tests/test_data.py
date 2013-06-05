@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
+import math
 import unittest
 
 from ..data import (
@@ -77,7 +78,7 @@ class FeatureTest(unittest.TestCase):
     def test__call__object(self):
         class Object(object):
             f1 = "value"
-        self.assertEqual(Feature("f1")(Object()), "value")
+        self.assertEqual(FeatureNom("f1")(Object()), "value")
 
         cls = namedtuple("Object", ["f1", "f2"])
         self.assertEqual(FeatureNom("f1")(cls(0, 1)), "0")
@@ -295,7 +296,6 @@ class DataTest(unittest.TestCase):
         objects2 = [(1, 0)]
         features1 = [Feature("f1"), Feature("f2")]
         features2 = [Feature("f2"), Feature("f1")]
-        #import ipdb; ipdb.set_trace()
         self.assertEqual(Data(objects1), Data(objects1))
         self.assertEqual(Data(objects1, features1), Data(objects1, features1))
         self.assertEqual(Data(objects1, features1), Data(objects2, features2))
@@ -304,20 +304,20 @@ class DataTest(unittest.TestCase):
             Data(objects1, features1), Data(objects1, features2))
 
     def test_getitem_one(self):
-        self.assertEqual(Data([[0]])[0, 0], (0, ))
+        self.assertEqual(tuple(Data([[0]])[0, 0]), ('0', ))
 
     def test_getitem(self):
-        data = Data([(0, 1), (2, 3)])
+        data = Data([('0', '1'), ('2', '3')])
         self.assertEqual(data[:], data)
-        self.assertEqual(data[0, :], (0, 1))
-        self.assertEqual(data[0], (0, 1))
-        self.assertEqual(data[1], (2, 3))
+        self.assertEqual(tuple(data[0, :]), ('0', '1'))
+        self.assertEqual(tuple(data[0]), ('0', '1'))
+        self.assertEqual(tuple(data[1]), ('2', '3'))
         self.assertEqual(data[:, 0], Data([(0, ), (2, )], [data.features[0]]))
         self.assertEqual(data[:, 1], Data([(1, ), (3, )], [data.features[1]]))
 
     def test_getitem_many(self):
         data = Data([(0, 1, 2)])
-        self.assertEqual(data[:, 0:1], Data([(0, 1)], data.features[0:1]))
+        self.assertEqual(data[:, 0:2], Data([(0, 1)], data.features[0:2]))
         self.assertEqual(data[:, :], data)
 
     def test_getitem_feature(self):
@@ -352,7 +352,24 @@ class DataTest(unittest.TestCase):
             Data([(0, 1, 2), (1, 2, 3)]).vif
 
     def test_vif(self):
-        self.assertEqual(Data([(0, 1), (1, 2)]).vif, [1.25, 0.25])
+        data = Data([(0, 1), (1, 2)], [FeatureLin("f1"), FeatureLin("f2")])
+        self.assertEqual(data.vif, [1.25, 0.25])
+
+    def test_stat(self):
+        features = [FeatureBin("f1"), FeatureNom("f2"),
+                    FeatureRank("f3"), FeatureLin("f4")]
+        data = Data([[True, "0", 0, 0.0],
+                     [True, "0", 1, -1.0],
+                     [False, "1", 2, 1.0]], features=features)
+        expected = {
+            FeatureBin("f1"): {True: 2, False: 1},
+            FeatureNom("f2"): {"0": 2, "1": 1},
+            FeatureRank("f3"): {0: 1, 1: 1, 2: 1},
+            FeatureLin("f4"): {"mean": 0.0, "var": 2.0 / 3,
+                               "std": math.sqrt(2.0 / 3)}
+        }
+
+        self.assertEqual(data.stat, expected)
 
 
 class DataReaderTest(unittest.TestCase):
