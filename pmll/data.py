@@ -102,7 +102,7 @@ class Data(object):
         if len(self.features) < 2:
             raise ValueError("Objects should have at least 2 features")
 
-        if self.objects.shape[0] < self.objects.shape[1]:
+        if self.objects.shape[0] < len(self.features):
             raise ValueError("Number of objects should be more than features")
 
         def __regression_residuals(x, y):
