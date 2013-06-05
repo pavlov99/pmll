@@ -57,15 +57,11 @@ class Data(object):
         """Check equality of datasets
 
         data1 == data2 if they have the same features and
-        objects being sorted according to data1.features are equal
+        objects being sorted according to data1.features are equal.
         """
-        indexes_self, features_self =\
-            zip(*sorted(enumerate(self.features), key=lambda x: x[1]))
-        indexes_other, features_other =\
-            zip(*sorted(enumerate(other.features), key=lambda x: x[1]))
-        return features_self == features_other and (
-            self.objects[:, np.array(indexes_self)] ==
-            other.objects[:, np.array(indexes_other)]).all()
+        return set(self.features) == set(other.features) and \
+            zip(self.objects[f.title] for f in sorted(self.features)) == \
+            zip(other.objects[f.title] for f in sorted(other.features))
 
     def __ne__(self, other):
         return not (self == other)
