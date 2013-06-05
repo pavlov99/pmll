@@ -43,15 +43,23 @@ class Data(object):
         dtype = np.dtype([fdtype(f) for f in self.features])
         self.objects = np.array([tuple(obj) for obj in objects], dtype=dtype)
 
+        self.nobjects = self.objects.shape[0]
+        self.nfeatures = len(self.features)
+        self.__matrix = None
+
     def __repr__(self):
         return "Features: {0}\n{1}".format(
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
     @property
-    def m(self):
+    def matrix(self):
         """Return matrix of objects if features are linear"""
-        return np.matrix()
+        if not self.__matrix:
+            if not all(f.scale == "lin" for f in self.features):
+                raise ValueError("Could convert only for lenear features")
+            self.__matrix = np.matrix(self.objects.tolist())
+        return self.__matrix
 
     def __eq__(self, other):
         """Check equality of datasets
@@ -94,8 +102,9 @@ class Data(object):
         if self.objects.shape[0] != other.objects.shape[0]:
             raise ValueError("Number of objects should be equal")
 
-        return Data(np.hstack([self.objects, other.objects]).tolist(),
-                    features=self.features + other.features)
+        objects = [list(o1) + list(o2) for o1, o2
+                   in zip(self.objects, other.objects)]
+        return Data(objects, features=self.features + other.features)
 
     @property
     def vif(self):
