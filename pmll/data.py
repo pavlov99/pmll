@@ -55,7 +55,7 @@ class Data(object):
     @property
     def matrix(self):
         """Return matrix of objects if features are linear"""
-        if not self.__matrix:
+        if self.__matrix is None:
             if not all(f.scale == "lin" for f in self.features):
                 raise ValueError("Could convert only for lenear features")
             self.__matrix = np.matrix(self.objects.tolist())

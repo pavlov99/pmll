@@ -2,6 +2,7 @@ import numpy as np
 
 from ..base import BaseModel, BaseRegressor
 from ..data import Data
+from ..feature import FeatureLin
 
 
 class FeatureGenerator(object):
@@ -22,7 +23,7 @@ class LeastSquaresModel(BaseModel):
         self.weights = weights
 
     def train(self, x, y):
-        x, y = x.objects, y.objects
+        x, y = x.matrix, y.matrix
         self.weights = (x.T * x).I * x.T * y
         return self
 
@@ -52,5 +53,7 @@ class LeastSquaresRegressor(BaseRegressor):
         self.feature_transformator = feature_transformator or (lambda x: x)
 
     def regress(self, x):
-        result = self.feature_transformator(x).objects * self.weights
-        return Data(result.tolist())
+        result = self.feature_transformator(x).matrix * self.weights
+        return Data(
+            result.tolist(),
+            [FeatureLin("f" + str(i)) for i in range(result.shape[1])])
