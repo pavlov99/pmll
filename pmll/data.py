@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from collections import namedtuple, Counter
+from collections import namedtuple
 import itertools
 import numpy as np
 
@@ -138,8 +138,8 @@ class Data(object):
     @property
     def stat(self):
         return {
-            feature: dict(Counter(values.tolist()[0]))
-            for feature, values in zip(self.features, self.objects.T)}
+            feature: feature.getstat(self.objects[feature.title])
+            for feature in self.features}
 
 
 class DataReader(object):

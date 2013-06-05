@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import Counter
+import numpy as np
 import sympy
 
 import operations
@@ -22,6 +24,18 @@ class FeatureMeta(type):
         setattr(class_, "convert", classmethod(
             lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
                 scale, Feature.DEFAULT_TYPE)[0](x)))
+
+        if scale == "lin":
+            getstat = lambda cls, list_: {
+                "mean": np.array(list_).mean(),
+                "std": np.array(list_).std(),
+                "var": np.array(list_).var(),
+            }
+        else:
+            getstat = lambda cls, list_: dict(Counter(list_))
+
+        setattr(class_, "getstat", classmethod(getstat))
+
         cls.__store__[scale] = class_
         return class_
 
