@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import Counter
+import numpy as np
 import sympy
 
 import operations
@@ -20,8 +22,20 @@ class FeatureMeta(type):
         class_ = super(FeatureMeta, cls).__new__(cls, name, bases, attrs)
         setattr(class_, "scale", scale)
         setattr(class_, "convert", classmethod(
-            lambda cls, x: Feature.FEATURE_TYPE_MAPPER.get(
-                scale, Feature.DEFAULT_TYPE)(x)))
+            lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
+                scale, Feature.DEFAULT_TYPE)[0](x)))
+
+        if scale == "lin":
+            getstat = lambda cls, list_: {
+                "mean": np.array(list_).mean(),
+                "std": np.array(list_).std(),
+                "var": np.array(list_).var(),
+            }
+        else:
+            getstat = lambda cls, list_: dict(Counter(list_))
+
+        setattr(class_, "getstat", classmethod(getstat))
+
         cls.__store__[scale] = class_
         return class_
 
@@ -39,11 +53,12 @@ class Feature(object):
     """
     __metaclass__ = FeatureMeta
 
-    FEATURE_TYPE_MAPPER = {
-        "nom": str,
-        "lin": float,
-        "rank": float,
-        "bin": bool,
+    # Map type to type (python_type, max_value_lenght)
+    FEATURE_TYPE_MAP = {
+        "nom": (str, 16),
+        "lin": (float, ),
+        "rank": (float, ),
+        "bin": (bool, ),
     }
     DEFAULT_SCALE = "nom"
     DEFAULT_TYPE = str

@@ -3,6 +3,7 @@ import unittest
 
 from ...base import BaseRegressor
 from ...data import Data
+from ...feature import FeatureLin
 from ..least_squares import LeastSquaresModel
 
 
@@ -13,7 +14,7 @@ class LeastSquaresModelTest(unittest.TestCase):
             [0, 0, 1],
             [1, 1, 2],
             [2, 2, 0],
-        ])
+        ], features=[FeatureLin("f{0}".format(i)) for i in range(3)])
         self.labels = self.data[:, 0]
         self.objects = self.data[:, 1:]
 
