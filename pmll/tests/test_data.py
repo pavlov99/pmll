@@ -177,7 +177,7 @@ class DataReaderTest(unittest.TestCase):
         features = [Feature("f", scale="lin"), Feature("f")]
         duplicated_features =\
             DataReader._DataReader__get_duplicated_features(features)
-        self.assertTrue("f" in duplicated_features)
+        self.assertTrue(features[0] in duplicated_features)
 
     def test_read(self):
         objects, features = DataReader.read(self.data_file_content.split("\n"))
