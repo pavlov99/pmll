@@ -49,37 +49,6 @@ class Feature(object):
         return self.title == other.title and self.type == other.type
 
 
-class FeatureTest(unittest.TestCase):
-    def setUp(self):
-        self.feature = Feature('f')
-        self.feature_nom = Feature('f', 'nom')
-        self.feature_lin = Feature('f', 'lin')
-        self.feature_rank = Feature('f', 'rank')
-        self.feature_bin = Feature('f', 'bin')
-        self.feature_nom2 = Feature('f', 'nom')
-
-    def test__eq__(self):
-        self.assertNotEqual(id(self.feature_nom), id(self.feature_nom2))
-        self.assertEqual(self.feature_nom, self.feature_nom2)
-        self.assertNotEqual(self.feature_nom, self.feature_lin)
-
-    def test_convert(self):
-        self.assertTrue(isinstance(self.feature.convert('1.0'), str))
-        self.assertEqual(self.feature.convert('1.0'), '1.0')
-
-        self.assertTrue(isinstance(self.feature_nom.convert('1.0'), str))
-        self.assertEqual(self.feature.convert('1.0'), '1.0')
-
-        self.assertTrue(isinstance(self.feature_lin.convert('1.0'), float))
-        self.assertEqual(self.feature_lin.convert('1'), 1.0)
-
-        self.assertTrue(isinstance(self.feature_rank.convert('1.0'), float))
-        self.assertEqual(self.feature_rank.convert('1.0'), 1.0)
-
-        self.assertTrue(isinstance(self.feature_bin.convert('1.0'), bool))
-        self.assertEqual(self.feature_bin.convert('1.0'), True)
-
-
 class ObjectFeatureMatrix(np.matrix):
     """
     Class for representation of objects-by-features matrix of features.
@@ -258,7 +227,7 @@ class DataReader(object):
 
         self.features = [Feature(field.split(':')[0], field.split(':')[1])
                          for field in header.split("\t")]
-        
+
         return self.features
 
 

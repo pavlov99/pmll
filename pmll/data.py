@@ -143,25 +143,27 @@ class Data(object):
 
 
 class DataReader(object):
+
     """Read data form tab separated file stream.
     Read data either into objects or matri. Stream can be open(file) or line
     generator.
     """
+
+    HEADER_PREFIX = "# "
+
     @classmethod
     def __parse_header(cls, header):
-        heared_prefix = "# "
-        if not header.startswith(heared_prefix):
+        if not header.startswith(cls.HEADER_PREFIX):
             msg = "Bad header format. Should starts from {0}".format(
-                heared_prefix)
+                cls.HEADER_PREFIX)
             raise ValueError(msg)
         else:
-            header = header[len(heared_prefix):].split('#', 1)[0].rstrip()
+            header = header[len(cls.HEADER_PREFIX):].split('#', 1)[0].rstrip()
             header = header.replace(",", "\t").replace(";", "\t")
 
         features = [
-            Feature(*field.split(':')).proxy
-            for field in header.split("\t")
-        ]
+            Feature(**dict(zip(["title", "scale"], field.split(':')))).proxy
+            for field in header.split("\t")]
 
         duplicated_features = cls.__get_duplicated_features(features)
         if duplicated_features:
@@ -172,13 +174,12 @@ class DataReader(object):
 
     @classmethod
     def __get_duplicated_features(cls, features):
-        """Return list of duplicated feature titles"""
-        feature_titles = [f.title for f in features]
-        if len(set(feature_titles)) != len(features):
-            return [f for f in feature_titles if feature_titles.count(f) > 1]
+        """Return list of duplicated features"""
+        if len(set(features)) != len(features):
+            return [f for f in features if features.count(f) > 1]
 
     @classmethod
-    def read(cls, stream, delimiter="\t"):
+    def get_objects_features(cls, stream, delimiter="\t"):
         """Read tab separated values.
         Return features and object generator
         """
@@ -193,3 +194,7 @@ class DataReader(object):
                    for line in stream)
 
         return objects, features
+
+    @classmethod
+    def read(cls, stream, delimiter="\t"):
+        return Data(*cls.get_objects_features(stream, delimiter=delimiter))
