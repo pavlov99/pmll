@@ -179,7 +179,7 @@ class DataReader(object):
             return [f for f in features if features.count(f) > 1]
 
     @classmethod
-    def read(cls, stream, delimiter="\t"):
+    def get_objects_features(cls, stream, delimiter="\t"):
         """Read tab separated values.
         Return features and object generator
         """
@@ -194,3 +194,7 @@ class DataReader(object):
                    for line in stream)
 
         return objects, features
+
+    @classmethod
+    def read(cls, stream, delimiter="\t"):
+        return Data(*cls.get_objects_features(stream, delimiter=delimiter))

@@ -45,8 +45,7 @@ class DataTest(unittest.TestCase):
                 "0\t70\t100.0",
                 "1\t50\t200",
             ])
-        objects, features = DataReader.read(self.data_file_content.split("\n"))
-        self.data = Data(objects, features)
+        self.data = DataReader.read(self.data_file_content.split("\n"))
 
         nfeatures = len(self.data_file_content.split("\n", 1)[0].split("\t"))
         self.assertEqual(
@@ -179,8 +178,9 @@ class DataReaderTest(unittest.TestCase):
             DataReader._DataReader__get_duplicated_features(features)
         self.assertTrue(features[0] in duplicated_features)
 
-    def test_read(self):
-        objects, features = DataReader.read(self.data_file_content.split("\n"))
+    def test_get_objects_features(self):
+        objects, features = DataReader.get_objects_features(
+            self.data_file_content.split("\n"))
         self.assertEqual(len(features), 3)
         for feature in features:
             self.assertIsInstance(feature, Feature)
