@@ -75,14 +75,14 @@ class DataTest(unittest.TestCase):
             Data(objects1, features1), Data(objects1, features2))
 
     def test_getitem_one(self):
-        self.assertEqual(tuple(Data([[0]])[0, 0]), ('0', ))
+        self.assertEqual(tuple(Data([[0]])[0, 0]), (0, ))
 
     def test_getitem(self):
         data = Data([('0', '1'), ('2', '3')])
         self.assertEqual(data[:], data)
-        self.assertEqual(tuple(data[0, :]), ('0', '1'))
-        self.assertEqual(tuple(data[0]), ('0', '1'))
-        self.assertEqual(tuple(data[1]), ('2', '3'))
+        self.assertEqual(tuple(data[0, :]), (0, 1))
+        self.assertEqual(tuple(data[0]), (0, 1))
+        self.assertEqual(tuple(data[1]), (2, 3))
         self.assertEqual(data[:, 0], Data([(0, ), (2, )], [data.features[0]]))
         self.assertEqual(data[:, 1], Data([(1, ), (3, )], [data.features[1]]))
 
