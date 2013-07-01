@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from collections import namedtuple
 import math
 import unittest
 
@@ -15,9 +14,6 @@ from ..feature import (
     FeatureNom,
     FeatureRank,
 )
-
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
 
 
 class FeatureTest(unittest.TestCase):
@@ -41,166 +37,8 @@ class FeatureTest(unittest.TestCase):
             Data([[6], [0]], features=[f1 * f2]))
 
 
-class FeatureBinTest(unittest.TestCase):
-    def setUp(self):
-        self.f1 = FeatureBin("f1")
-        self.f2 = FeatureBin("f2")
-        self.Object = namedtuple("Object", ["f1", "f2"])
-
-    def test__and__(self):
-        f = self.f1 & self.f2
-        self.assertEqual(f(self.Object(0, 0)), 0)
-        self.assertEqual(f(self.Object(0, 1)), 0)
-        self.assertEqual(f(self.Object(1, 0)), 0)
-        self.assertEqual(f(self.Object(1, 1)), 1)
-
-    def test__and__constant(self):
-        f = self.f1 & True
-        self.assertEqual(f.formula, self.f1.formula)
-        f = self.f1 & False
-        self.assertEqual(f.formula, False)
-
-    def test__rand__constant(self):
-        f = True & self.f1
-        self.assertEqual(f.formula, self.f1.formula)
-        f = False & self.f1
-        self.assertEqual(f.formula, False)
-
-    def test__or__(self):
-        f = self.f1 | self.f2
-        self.assertEqual(f(self.Object(0, 0)), 0)
-        self.assertEqual(f(self.Object(0, 1)), 1)
-        self.assertEqual(f(self.Object(1, 0)), 1)
-        self.assertEqual(f(self.Object(1, 1)), 1)
-
-    def test__or__constant(self):
-        f = self.f1 | True
-        self.assertEqual(f.formula, True)
-        f = self.f1 | False
-        self.assertEqual(f.formula, self.f1.formula)
-
-    def test__ror__constant(self):
-        f = True | self.f1
-        self.assertEqual(f.formula, True)
-        f = False | self.f1
-        self.assertEqual(f.formula, self.f1.formula)
-
-    def test__xor__(self):
-        f = self.f1 ^ self.f2
-        self.assertEqual(f(self.Object(0, 0)), 0)
-        self.assertEqual(f(self.Object(0, 1)), 1)
-        self.assertEqual(f(self.Object(1, 0)), 1)
-        self.assertEqual(f(self.Object(1, 1)), 0)
-
-    def test__xor__constant(self):
-        f = self.f1 ^ True
-        self.assertEqual(f(self.Object(0, 0)), True)
-        self.assertEqual(f(self.Object(1, 0)), False)
-        f = self.f1 ^ False
-        self.assertEqual(f.formula, self.f1.formula)
-
-    def test__rxor__constant(self):
-        f = True ^ self.f1
-        self.assertEqual(f(self.Object(0, 0)), True)
-        self.assertEqual(f(self.Object(1, 0)), False)
-        f = False ^ self.f1
-        self.assertEqual(f.formula, self.f1.formula)
-
-    def test_complex(self):
-        g = self.f1 | self.f2
-        f = g & self.f2
-        self.assertEqual(f(self.Object(0, 0)), 0)
-        self.assertEqual(f(self.Object(0, 1)), 1)
-        self.assertEqual(f(self.Object(1, 0)), 0)
-        self.assertEqual(f(self.Object(1, 1)), 1)
-
-
-class FeatureLinTest(unittest.TestCase):
-    def setUp(self):
-        self.f1 = FeatureLin("f1")
-        self.f2 = FeatureLin("f2")
-        self.f3 = FeatureLin("f3")
-        self.Object = namedtuple("Object", ["f1", "f2", "f3"])
-
-    def test__neg__(self):
-        f = -self.f1
-        self.assertEqual(f(self.Object(1, 0, 0)), -1)
-
-    def test__add__(self):
-        f = self.f1 + self.f2
-        self.assertEqual(f(self.Object(2, 3, 7)), 5)
-
-        f = self.f1 + self.f2 + self.f3
-        self.assertEqual(f(self.Object(2, 3, 7)), 12)
-
-    def test__add__constant(self):
-        f = self.f1 + 1
-        self.assertEqual(f(self.Object(2, 0, 0)), 3)
-
-    def test__radd__constant(self):
-        f = 1 + self.f1
-        self.assertEqual(f(self.Object(2, 0, 0)), 3)
-
-    def test__sub__(self):
-        f = self.f1 - self.f2
-        self.assertEqual(f(self.Object(2, 3, 7)), -1)
-
-        f = self.f1 - self.f2 - self.f3
-        self.assertEqual(f(self.Object(7, 3, 4)), 0)
-
-    def test__sub__constant(self):
-        f = self.f1 - 1
-        self.assertEqual(f(self.Object(3, 0, 0)), 2)
-
-    def test__rsub__constant(self):
-        f = 1 - self.f1
-        self.assertEqual(f(self.Object(3, 0, 0)), -2)
-
-    def test__mul__(self):
-        f = self.f1 * self.f2
-        self.assertEqual(f(self.Object(2, 3, 7)), 6)
-
-        f = self.f1 * self.f2 * self.f3
-        self.assertEqual(f(self.Object(2, 3, 7)), 42)
-
-    def test__mul__constant(self):
-        f = self.f1 * 3
-        self.assertEqual(f(self.Object(2, 0, 0)), 6)
-
-    def test__rmul__constant(self):
-        f = 3 * self.f1
-        self.assertEqual(f(self.Object(2, 0, 0)), 6)
-
-    def test__div__(self):
-        f = self.f1 / self.f2
-        self.assertEqual(f(self.Object(3, 2, 7)), 1.5)
-
-        f = self.f1 / self.f2 / self.f3
-        self.assertEqual(f(self.Object(30, 3, 2)), 5)
-
-    def test__div__constant(self):
-        f = self.f1 / 3
-        self.assertEqual(f(self.Object(6, 0, 0)), 2)
-
-    def test__rdiv__constant(self):
-        f = 3 / self.f1
-        self.assertEqual(f(self.Object(6, 0, 0)), 0.5)
-
-    def test__pow__(self):
-        f = self.f1 ** self.f2
-        self.assertEqual(f(self.Object(2, 3, 7)), 8)
-
-    def test__pow__constant(self):
-        f = self.f1 ** 2
-        self.assertEqual(f(self.Object(3, 0, 0)), 9)
-
-    def test__rpow__constant(self):
-        f = 2 ** self.f1
-        self.assertEqual(f(self.Object(3, 0, 0)), 8)
-
-
 class DataTest(unittest.TestCase):
-    def setUp(self):
+    def test_init_features(self):
         self.data_file_content = "\n".join(
             [
                 "# label:nom\tweight:lin\theigth:lin",
@@ -210,10 +48,6 @@ class DataTest(unittest.TestCase):
         objects, features = DataReader.read(self.data_file_content.split("\n"))
         self.data = Data(objects, features)
 
-    def test_init(self):
-        pass
-
-    def test_init_features(self):
         nfeatures = len(self.data_file_content.split("\n", 1)[0].split("\t"))
         self.assertEqual(
             len(self.data.features),
@@ -311,16 +145,17 @@ class DataTest(unittest.TestCase):
 
 class DataReaderTest(unittest.TestCase):
     def setUp(self):
-        self.header = "# label:nom\tweight:lin\theigth:lin"
+        self.header = "\t".join(["# label:nom", "weight:lin", "heigth:lin"])
         self.data_file_content = "\n".join(
             [
-                "# label:nom\tweight:lin\theigth:lin",
-                "0\t70\t100.0",
-                "1\t50\t200",
+                self.header,
+                "\t".join(["0", "70", "100.0"]),
+                "\t".join(["1", "50", "200"]),
             ])
 
     def test_parse_header(self):
-        DataReader._DataReader__parse_header(self.header)
+        features = DataReader._DataReader__parse_header(self.header)
+        self.assertEqual(len(features), 3)
 
     def test_init_bad_header_hash(self):
         header = self.header[1:]
@@ -339,7 +174,7 @@ class DataReaderTest(unittest.TestCase):
         self.assertEqual(features[-1].scale, Feature.DEFAULT_SCALE)
 
     def test_get_duplicated_features(self):
-        features = [Feature("f", "lin"), Feature("f")]
+        features = [Feature("f", scale="lin"), Feature("f")]
         duplicated_features =\
             DataReader._DataReader__get_duplicated_features(features)
         self.assertTrue("f" in duplicated_features)
