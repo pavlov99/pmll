@@ -64,7 +64,7 @@ class Feature(object):
     DEFAULT_SCALE = "lin"
     DEFAULT_TYPE = FEATURE_TYPE_MAP[DEFAULT_SCALE][0]
 
-    def __init__(self, formula=None, scale=DEFAULT_SCALE):
+    def __init__(self, title=None, formula=None, scale=DEFAULT_SCALE):
         """Init Feature class
 
         scale:      feature scale, defines result type and operations allowed
@@ -77,14 +77,16 @@ class Feature(object):
         convert_atoms {"feature_title": feature} allows complicated feature
                     calculation.
         """
-        self.formula = sympy.Symbol(formula) if isinstance(formula, str) \
-            else formula
+        assert title is not None or formula is not None
+        self.formula = formula if formula is not None else sympy.Symbol(title)
         self.scale = self.scale or scale
         self._atoms_map = {self.title: self}
 
     @property
     def proxy(self):
-        return self.__class__.__store__[self.scale](self.title)
+        obj = self.__class__.__store__[self.scale](formula=self.formula)
+        obj._atoms_map = self._atoms_map  # FIXME: add test to that line
+        return obj
 
     @property
     def title(self):
@@ -149,7 +151,7 @@ class FeatureBin(Feature):
 
 class FeatureLin(Feature):
     def __neg__(self):
-        f = FeatureLin(-self.formula)
+        f = FeatureLin(formula=-self.formula)
         f._atoms_map.update(self._atoms_map)
         return f
 
@@ -184,7 +186,7 @@ class FeatureLin(Feature):
         return operations.Pow(self, other)
 
     def __rpow__(self, other, modulo=None):
-        f = FeatureLin(other ** self.formula)
+        f = FeatureLin(formula=other ** self.formula)
         f._atoms_map.update(self._atoms_map)
         return f
 
