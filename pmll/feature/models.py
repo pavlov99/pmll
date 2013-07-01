@@ -95,6 +95,9 @@ class Feature(object):
     def __str__(self):
         return self.title
 
+    def __repr__(self):
+        return "{0}: {1} (scale={2})".format(self.__class__, self, self.scale)
+
     def __lt__(self, other):
         """Helper method to order features"""
         return (self.scale, self.title) < (other.scale, other.title)
