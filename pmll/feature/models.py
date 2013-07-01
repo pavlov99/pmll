@@ -3,17 +3,18 @@ from collections import Counter
 import numpy as np
 import sympy
 
-import operations
+from . import operations
 
 __author__ = "Kirill Pavlov"
 __email__ = "kirill.pavlov@phystech.edu"
 
 
 class FeatureMeta(type):
+
     """MetaClass for Features
 
-    For each feature defines its scala during class creation. Adds classmethod
-    to convert value according to feature type
+    For each feature define its scala during class creation.
+    Add classmethod to convert value according to feature type.
     """
     __store__ = dict()
 
@@ -23,7 +24,7 @@ class FeatureMeta(type):
         setattr(class_, "scale", scale)
         setattr(class_, "convert", classmethod(
             lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
-                scale, Feature.DEFAULT_TYPE)[0](x)))
+                scale, (Feature.DEFAULT_TYPE,))[0](x)))
 
         if scale == "lin":
             getstat = lambda cls, list_: {
@@ -46,7 +47,7 @@ class Feature(object):
 
     nom:  nominal value represented by string
     lin:  float number in linear scale
-    rank: float number, arithmetic operations are not supported
+    rank: integer number, arithmetic operations are not supported
     bin:  binary format, true/false or 1/0
 
     Feature does not know about data, does not have any mean or deviation.
@@ -60,10 +61,10 @@ class Feature(object):
         "rank": (float, ),
         "bin": (bool, ),
     }
-    DEFAULT_SCALE = "nom"
-    DEFAULT_TYPE = str
+    DEFAULT_SCALE = "lin"
+    DEFAULT_TYPE = FEATURE_TYPE_MAP[DEFAULT_SCALE][0]
 
-    def __init__(self, title, scale=DEFAULT_SCALE):
+    def __init__(self, formula=None, scale=DEFAULT_SCALE):
         """Init Feature class
 
         scale:      feature scale, defines result type and operations allowed
@@ -76,27 +77,31 @@ class Feature(object):
         convert_atoms {"feature_title": feature} allows complicated feature
                     calculation.
         """
-        self.title = str(title)
-        self.formula = sympy.Symbol(title)
+        self.formula = sympy.Symbol(formula) if isinstance(formula, str) \
+            else formula
         self.scale = self.scale or scale
-        self._atoms_map = {title: self}
+        self._atoms_map = {self.title: self}
 
     @property
     def proxy(self):
         return self.__class__.__store__[self.scale](self.title)
 
-    def __str__(self):
+    @property
+    def title(self):
         return str(self.formula)
+
+    def __str__(self):
+        return self.title
+
+    def __lt__(self, other):
+        """Helper method to order features"""
+        return (self.scale, self.title) < (other.scale, other.title)
 
     def __eq__(self, other):
         return not(self < other or other < self)
 
     def __ne__(self, other):
         return not (self == other)
-
-    def __lt__(self, other):
-        """Helper method to order features"""
-        return (self.scale, self.title) < (other.scale, other.title)
 
     def __hash__(self):
         return hash((self.scale, self.title))
@@ -122,16 +127,30 @@ class Feature(object):
             return self.convert(result)
 
 
-class FeatureNom(Feature):
-    pass
+class FeatureBin(Feature):
+    def __and__(self, other):
+        return operations.And(self, other)
+
+    def __rand__(self, other):
+        return self.__and__(other)
+
+    def __xor__(self, other):
+        return operations.Xor(self, other)
+
+    def __rxor__(self, other):
+        return self.__xor__(other)
+
+    def __or__(self, other):
+        return operations.Or(self, other)
+
+    def __ror__(self, other):
+        return self.__or__(other)
 
 
 class FeatureLin(Feature):
     def __neg__(self):
-        f = FeatureLin("")
-        f.formula = -self.formula
+        f = FeatureLin(-self.formula)
         f._atoms_map.update(self._atoms_map)
-        f.title = str(f.formula)
         return f
 
     def __add__(self, other):
@@ -165,31 +184,13 @@ class FeatureLin(Feature):
         return operations.Pow(self, other)
 
     def __rpow__(self, other, modulo=None):
-        f = FeatureLin("")
-        f.formula = other ** self.formula
+        f = FeatureLin(other ** self.formula)
         f._atoms_map.update(self._atoms_map)
-        f.title = str(f.formula)
         return f
 
 
-class FeatureBin(Feature):
-    def __and__(self, other):
-        return operations.And(self, other)
-
-    def __rand__(self, other):
-        return self.__and__(other)
-
-    def __xor__(self, other):
-        return operations.Xor(self, other)
-
-    def __rxor__(self, other):
-        return self.__xor__(other)
-
-    def __or__(self, other):
-        return operations.Or(self, other)
-
-    def __ror__(self, other):
-        return self.__or__(other)
+class FeatureNom(Feature):
+    pass
 
 
 class FeatureRank(Feature):

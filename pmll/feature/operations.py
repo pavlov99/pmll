@@ -24,9 +24,7 @@ def wrap_feature(feature_scale):
                           for k, v in kwargs.items()}
 
                 result = f(*args, **kwargs)
-                feature = Feature("", feature_scale).proxy
-                feature.formula = result
-                feature.title = str(result)
+                feature = Feature(result, feature_scale).proxy
                 feature._atoms_map.update(dict([
                     (k, v) for arg in fargs for k, v in arg._atoms_map.items()
                 ]))
