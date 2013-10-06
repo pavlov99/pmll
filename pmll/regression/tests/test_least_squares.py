@@ -31,7 +31,6 @@ class LeastSquaresModelTest(unittest.TestCase):
     def test_train(self):
         regressor = self.model().train(self.objects, self.labels).predictor
         self.assertTrue(isinstance(regressor, BaseRegressor))
-        print regressor.weights
         self.assertTrue((regressor.weights == np.matrix([[1], [0]])).all())
         result = regressor.regress(self.objects)
         self.assertTrue(isinstance(result, Data))
