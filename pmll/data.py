@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 import itertools
+import six
 import numpy as np
 
 from .feature import Feature
@@ -128,7 +129,7 @@ class Data(object):
 
         objects, vif = self.matrix, []
         for i in range(len(self.features)):
-            rows = range(i) + range(i + 1, len(self.features))
+            rows = list(range(i)) + list(range(i + 1, len(self.features)))
             residuals = __regression_residuals(objects[:, rows], objects[:, i])
             v = objects[:, i].std() ** 2 / sum(residuals ** 2)
             vif.append(float(v))
@@ -185,7 +186,7 @@ class DataReader(object):
         """
         # convert stream to generator
         stream = (line for line in stream)
-        header = itertools.islice(stream, 1).next()
+        header = six.advance_iterator(itertools.islice(stream, 1))
         features = cls.__parse_header(header)
 
         Object = namedtuple('Object', [f.title for f in features])

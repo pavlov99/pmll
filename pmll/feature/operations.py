@@ -13,7 +13,7 @@ def wrap_feature(feature_scale):
             from ..feature import Feature
 
             fargs = [
-                feature for feature in list(args) + kwargs.values()
+                feature for feature in list(args) + list(kwargs.values())
                 if isinstance(feature, Feature)
             ]
 
