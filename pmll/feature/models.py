@@ -7,9 +7,6 @@ import six
 
 from . import operations
 
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
-
 
 class FeatureMeta(type):
 
