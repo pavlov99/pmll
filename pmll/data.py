@@ -6,9 +6,6 @@ import numpy as np
 
 from .feature import Feature
 
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
-
 
 class Data(object):
     """General data representation.

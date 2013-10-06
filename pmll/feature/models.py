@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 from collections import Counter
 import numpy as np
 import sympy
@@ -185,6 +186,9 @@ class FeatureLin(Feature):
 
     def __rdiv__(self, other):
         return other * operations.Inverse(self)
+
+    __rtruediv__ = __rdiv__
+    __truediv__ = __div__
 
     def __pow__(self, other, modulo=None):
         return operations.Pow(self, other)
