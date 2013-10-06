@@ -1,20 +1,23 @@
 SHELL=/bin/bash
-ENV=$(CURDIR)/.env
-BIN=$(ENV)/bin
-PYTHON=$(BIN)/python
+# ENV=$(CURDIR)/.env  # for manual creation
+
+PYTHON=$(shell which python)  # current virtualenv for different versions test
+BIN=$(shell dirname $(PYTHON))
+ENV=$(shell dirname $(BIN))
 PYVERSION=$(shell $(PYTHON) -c "import sys; print('python{}.{}'.format(sys.version_info.major, sys.version_info.minor))")
 PYTHON_PACKAGE_PATH="/usr/lib/$(shell [[ $(PYVERSION) == python3* ]] && echo "python3" || echo $(PYVERSION))/dist-packages/"
+
 SITE_PACKAGES=numpy scipy
 SPHINXBUILD=sphinx-build
-
-RED=\033[0;31m
-GREEN=\033[0;32m
-NC=\033[0m
 
 RED=$(shell tput setaf 1)
 GREEN=$(shell tput setaf 2)
 NC=$(shell tput setaf 7)
 
+
+.PHONY: tt
+tt:
+	$(PYTHON) --version
 
 all: $(ENV)
 
@@ -48,6 +51,7 @@ test: clean
 
 init_virtualenv: requirements.txt
 	virtualenv --no-site-packages .env
+	source .env/bin/activate
 
 .PHONY: site-packages
 # target: site-packages - link system packages to virtual environment
@@ -68,6 +72,5 @@ site-packages:
 	    fi; \
 	done
 
-$(ENV): init_virtualenv site-packages
-	$(ENV)/bin/pip install -r requirements.txt --use-mirrors
-	touch $(ENV)
+env: init_virtualenv site-packages
+	$(BIN)/pip install -r requirements.txt --use-mirrors
