@@ -2,6 +2,7 @@
 from collections import Counter
 import numpy as np
 import sympy
+import six
 
 from . import operations
 
@@ -41,6 +42,7 @@ class FeatureMeta(type):
         return class_
 
 
+@six.add_metaclass(FeatureMeta)
 class Feature(object):
     """Feture representation
     Converts feature value according to one of the following types:
@@ -52,7 +54,6 @@ class Feature(object):
 
     Feature does not know about data, does not have any mean or deviation.
     """
-    __metaclass__ = FeatureMeta
 
     # Map type to type (python_type, max_value_lenght)
     FEATURE_TYPE_MAP = {
