@@ -60,14 +60,17 @@ class Data(object):
         return self.__matrix
 
     def __eq__(self, other):
-        """Check equality of datasets
+        """ Check equality of datasets.
 
         data1 == data2 if they have the same features and
         objects being sorted according to data1.features are equal.
+        :return bool:
+
         """
-        l1 = zip(*[list(self.objects[f.title]) for f in sorted(self.features)])
-        l2 = zip(*[
-            list(other.objects[f.title])for f in sorted(other.features)])
+        l1 = list(zip(*[list(self.objects[f.title])
+                        for f in sorted(self.features)]))
+        l2 = list(zip(*[list(other.objects[f.title])
+                        for f in sorted(other.features)]))
         return set(self.features) == set(other.features) and l1 == l2
 
     def __ne__(self, other):
