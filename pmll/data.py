@@ -8,7 +8,7 @@ from .feature import Feature
 
 
 class Data(object):
-    """General data representation.
+    """ General data representation.
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
 
@@ -26,7 +26,7 @@ class Data(object):
                         TODO: may be easier create new data?
     """
     def __init__(self, objects, features=None):
-        """Init data class
+        """ Init data class.
         objects: convertable to list instances
         features: list of Features
         """
