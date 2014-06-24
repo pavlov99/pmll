@@ -4,8 +4,7 @@ python: "2.7"
 
 env:
     - TOXENV=py27
-    - TOXENV=py32
-    # - TOXENV=py33   # http://lists.alioth.debian.org/pipermail/debian-science-maintainers/2013-May/017973.html
+    - TOXENV=py33
 
 branches:
   only:
@@ -13,9 +12,6 @@ branches:
     - develop
 
 install:
-    - sudo apt-get update -qq
-    - pip install --quiet --use-mirrors tox
-    - sudo apt-get install -qq python-numpy python3-numpy
-    - sudo apt-get install -qq python-scipy python3-scipy
+    - pip install --quiet tox
 
 script: tox
