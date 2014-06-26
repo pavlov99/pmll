@@ -1,0 +1,12 @@
+*~
+*.pyc
+.env
+.env3
+*.egg
+*.egg-info
+.tox
+.coverage
+.ropeproject
+dist/*
+docs/_build
+.DS_Store
