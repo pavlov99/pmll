@@ -5,6 +5,7 @@ import six
 import numpy as np
 
 from .feature import Feature
+from .utils import cached_property
 
 
 class Data(object):
@@ -25,10 +26,13 @@ class Data(object):
                         could matter.
                         TODO: may be easier create new data?
     """
+
     def __init__(self, objects, features=None):
         """ Init data class.
-        objects: convertable to list instances
-        features: list of Features
+
+        :param list objects: convertable to list instances
+        :param list features: list of Features
+
         """
         fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
 
@@ -43,21 +47,18 @@ class Data(object):
 
         self.nobjects = self.objects.shape[0]
         self.nfeatures = len(self.features)
-        self.__matrix = None
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
-    @property
+    @cached_property
     def matrix(self):
-        """Return matrix of objects if features are linear"""
-        if self.__matrix is None:
-            if not all(f.scale == "lin" for f in self.features):
-                raise ValueError("Could convert only for lenear features")
-            self.__matrix = np.matrix(self.objects.tolist())
-        return self.__matrix
+        """Return matrix of objects if features are linear."""
+        if not all(f.scale == "lin" for f in self.features):
+            raise ValueError("Could convert only for lenear features")
+        return np.matrix(self.objects.tolist())
 
     def __eq__(self, other):
         """ Check equality of datasets.
