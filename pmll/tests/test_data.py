@@ -151,8 +151,21 @@ class DataTest(unittest.TestCase):
         d1, d2 = Data.split(data, size=1)
         self.assertTrue(isinstance(d1, Data))
         self.assertTrue(isinstance(d2, Data))
-        self.assertEqual(d1.objects.shape, (1, 1))
-        self.assertEqual(d2.objects.shape, (2, 1))
+        self.assertEqual(d1.objects.shape[0], 1)
+        self.assertEqual(d2.objects.shape[0], 2)
+
+    def test_split_ratio(self):
+        data = Data([[x] for x in range(100)])
+        d1, d2 = Data.split(data, ratio=0.05)
+        self.assertTrue(isinstance(d1, Data))
+        self.assertTrue(isinstance(d2, Data))
+
+        # probability of opposite = 8.44e-08
+        self.assertTrue(d1.objects.shape[0] < 20)
+        self.assertEqual(
+            d1.objects.shape[0] + d2.objects.shape[0],
+            data.objects.shape
+        )
 
 
 class DataReaderTest(unittest.TestCase):
