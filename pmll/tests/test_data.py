@@ -135,11 +135,24 @@ class DataTest(unittest.TestCase):
             FeatureBin("f1"): {True: 2, False: 1},
             FeatureNom("f2"): {"0": 2, "1": 1},
             FeatureRank("f3"): {0: 1, 1: 1, 2: 1},
-            FeatureLin("f4"): {"mean": 0.0, "var": 2.0 / 3,
-                               "std": math.sqrt(2.0 / 3)}
+            FeatureLin("f4"): {
+                "mean": 0.0,
+                "var": 2.0 / 3,
+                "std": math.sqrt(2.0 / 3),
+                "min": -1.0,
+                "max": 1.0,
+            }
         }
 
         self.assertEqual(data.stat, expected)
+
+    def test_split_size(self):
+        data = Data([[0], [1], [2]])
+        d1, d2 = Data.split(data, size=1)
+        self.assertTrue(isinstance(d1, Data))
+        self.assertTrue(isinstance(d2, Data))
+        self.assertEqual(d1.objects.shape, (1, 1))
+        self.assertEqual(d2.objects.shape, (2, 1))
 
 
 class DataReaderTest(unittest.TestCase):

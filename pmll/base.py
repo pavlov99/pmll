@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod, abstractproperty
 import time
-import six
+
+from . import six
 
 
 @six.add_metaclass(ABCMeta)

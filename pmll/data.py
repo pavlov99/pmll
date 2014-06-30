@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 import itertools
-import six
 import numpy as np
 
+from . import six
 from .feature import Feature
 from .utils import cached_property
 
@@ -142,6 +142,18 @@ class Data(object):
         return {
             feature: feature.getstat(self.objects[feature.title])
             for feature in self.features}
+
+    @classmethod
+    def split(cls, data, ratio=None, size=None):
+        """ Split data objects into two groups.
+
+        Method is used to split data into train and test sets.
+        Specify either ratio or size.
+
+        """
+        ratio = ratio or float(size) / data.nobjects
+
+        return data
 
 
 class DataReader(object):
