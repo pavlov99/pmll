@@ -2,13 +2,13 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import time
 
-
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
+from . import six
 
 
+@six.add_metaclass(ABCMeta)
 class BaseModel(object):
-    """Based model for algorithms.
+    """ Based model for algorithms.
+
     Each classifier or regression model should be derived from it.
     Useage:
 
@@ -32,14 +32,14 @@ class BaseModel(object):
     it is also possible to call corresponding method for each class:
     Classifier = ClassifierModel().predictor
     Classifier.classify(object_test) -> label_test
+
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         self.__decorate_method('train')
 
     def __decorate_method(self, method_name):
-        """Decorate given method (change to decoreted): calculate time"""
+        """Decorate given method (change to decoreted): calculate time."""
         method = getattr(self, method_name)
 
         def decorated_method(*args, **kwargs):
@@ -53,7 +53,8 @@ class BaseModel(object):
 
     @abstractproperty
     def predictor(self):
-        """Return predictor for algorithm.
+        """ Return predictor for algorithm.
+
         Predictor property returns classifier or regressor or something
         which has call method and is able to predict labels for new objects.
         It is possible to initialize model and get predictor without train.
@@ -61,21 +62,26 @@ class BaseModel(object):
 
         Also predictor is a way to let model know how to deal with it (predict
         future answers based on parameters)
+
         """
         pass
 
     @abstractmethod
     def train(self, x, y):
         """Abstract train method, return self instance.
+
         Model fits parameters during train. It is possible to call
         self.predictor (for existing model) or self.train().predictor
+        :return self:
+
         """
         return self
 
 
+@six.add_metaclass(ABCMeta)
 class BaseClassifier(object):
-    """Base class for any classification algorithm"""
-    __metaclass__ = ABCMeta
+
+    """ Base class for any classification algorithm."""
 
     @abstractmethod
     def classify(self, x):
@@ -85,9 +91,10 @@ class BaseClassifier(object):
         self.classify(*args, **kwargs)
 
 
+@six.add_metaclass(ABCMeta)
 class BaseRegressor(object):
-    """Base class for any regression algorithm"""
-    __metaclass__ = ABCMeta
+
+    """ Base class for any regression algorithm."""
 
     @abstractmethod
     def regress(self, x):

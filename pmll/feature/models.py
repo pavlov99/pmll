@@ -3,12 +3,9 @@ from __future__ import division
 from collections import Counter
 import numpy as np
 import sympy
-import six
 
+from .. import six
 from . import operations
-
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
 
 
 class FeatureMeta(type):
@@ -33,6 +30,8 @@ class FeatureMeta(type):
                 "mean": np.array(list_).mean(),
                 "std": np.array(list_).std(),
                 "var": np.array(list_).var(),
+                "min": np.array(list_).min(),
+                "max": np.array(list_).max(),
             }
         else:
             getstat = lambda cls, list_: dict(Counter(list_))

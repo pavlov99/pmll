@@ -135,11 +135,37 @@ class DataTest(unittest.TestCase):
             FeatureBin("f1"): {True: 2, False: 1},
             FeatureNom("f2"): {"0": 2, "1": 1},
             FeatureRank("f3"): {0: 1, 1: 1, 2: 1},
-            FeatureLin("f4"): {"mean": 0.0, "var": 2.0 / 3,
-                               "std": math.sqrt(2.0 / 3)}
+            FeatureLin("f4"): {
+                "mean": 0.0,
+                "var": 2.0 / 3,
+                "std": math.sqrt(2.0 / 3),
+                "min": -1.0,
+                "max": 1.0,
+            }
         }
 
         self.assertEqual(data.stat, expected)
+
+    def test_split_size(self):
+        data = Data([[0], [1], [2]])
+        d1, d2 = Data.split(data, size=1)
+        self.assertTrue(isinstance(d1, Data))
+        self.assertTrue(isinstance(d2, Data))
+        self.assertEqual(d1.objects.shape[0], 1)
+        self.assertEqual(d2.objects.shape[0], 2)
+
+    def test_split_ratio(self):
+        data = Data([[x] for x in range(100)])
+        d1, d2 = Data.split(data, ratio=0.05)
+        self.assertTrue(isinstance(d1, Data))
+        self.assertTrue(isinstance(d2, Data))
+
+        # probability of opposite = 8.44e-08
+        self.assertTrue(d1.objects.shape[0] < 20)
+        self.assertEqual(
+            d1.objects.shape[0] + d2.objects.shape[0],
+            data.objects.shape[0]
+        )
 
 
 class DataReaderTest(unittest.TestCase):

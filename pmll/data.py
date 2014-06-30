@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 import itertools
-import six
 import numpy as np
+import random
 
+from . import six
 from .feature import Feature
+from .utils import cached_property
 
 
 class Data(object):
-    """General data representation.
+    """ General data representation.
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
 
@@ -25,10 +27,13 @@ class Data(object):
                         could matter.
                         TODO: may be easier create new data?
     """
+
     def __init__(self, objects, features=None):
-        """Init data class
-        objects: convertable to list instances
-        features: list of Features
+        """ Init data class.
+
+        :param list objects: convertable to list instances
+        :param list features: list of Features
+
         """
         fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
 
@@ -43,21 +48,18 @@ class Data(object):
 
         self.nobjects = self.objects.shape[0]
         self.nfeatures = len(self.features)
-        self.__matrix = None
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
-    @property
+    @cached_property
     def matrix(self):
-        """Return matrix of objects if features are linear"""
-        if self.__matrix is None:
-            if not all(f.scale == "lin" for f in self.features):
-                raise ValueError("Could convert only for lenear features")
-            self.__matrix = np.matrix(self.objects.tolist())
-        return self.__matrix
+        """Return matrix of objects if features are linear."""
+        if not all(f.scale == "lin" for f in self.features):
+            raise ValueError("Could convert only for lenear features")
+        return np.matrix(self.objects.tolist())
 
     def __eq__(self, other):
         """ Check equality of datasets.
@@ -141,6 +143,32 @@ class Data(object):
         return {
             feature: feature.getstat(self.objects[feature.title])
             for feature in self.features}
+
+    @classmethod
+    def split(cls, data, ratio=None, size=None):
+        """ Split data objects into two groups.
+
+        Method is used to split data into train and test sets.
+        Specify either ratio or size.
+
+        """
+        if size is not None:
+            predicate = [True] * size + [False] * (data.nobjects - size)
+            random.shuffle(predicate)
+        else:
+            predicate = (random.random() < ratio for i in range(data.nobjects))
+
+        objs1, objs2 = [], []
+        for p, obj in zip(predicate, data.objects):
+            if p:
+                objs1.append(obj)
+            else:
+                objs2.append(obj)
+
+        return (
+            Data(objs1, features=data.features),
+            Data(objs2, features=data.features),
+        )
 
 
 class DataReader(object):
