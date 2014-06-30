@@ -164,7 +164,7 @@ class DataTest(unittest.TestCase):
         self.assertTrue(d1.objects.shape[0] < 20)
         self.assertEqual(
             d1.objects.shape[0] + d2.objects.shape[0],
-            data.objects.shape
+            data.objects.shape[0]
         )
 
 

@@ -2,6 +2,7 @@
 from collections import namedtuple
 import itertools
 import numpy as np
+import random
 
 from . import six
 from .feature import Feature
@@ -151,9 +152,23 @@ class Data(object):
         Specify either ratio or size.
 
         """
-        ratio = ratio or float(size) / data.nobjects
+        if size is not None:
+            predicate = [True] * size + [False] * (data.nobjects - size)
+            random.shuffle(predicate)
+        else:
+            predicate = (random.random() < ratio for i in range(data.nobjects))
 
-        return data
+        objs1, objs2 = [], []
+        for p, obj in zip(predicate, data.objects):
+            if p:
+                objs1.append(obj)
+            else:
+                objs2.append(obj)
+
+        return (
+            Data(objs1, features=data.features),
+            Data(objs2, features=data.features),
+        )
 
 
 class DataReader(object):
