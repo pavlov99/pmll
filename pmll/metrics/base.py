@@ -20,6 +20,13 @@ import math
 
 
 class QualityMeasurerLinear(object):
+
+    """ Quality measurer for linear features.
+
+    .. versionadded:: 0.1.5
+
+    """
+
     def __init__(self):
         self.sse = 0.0
         self.sae = 0.0
@@ -67,6 +74,13 @@ class QualityMeasurerLinear(object):
 
 
 class QualityMeasurerNominal(object):
+
+    """ Quality measurer for nominal features.
+
+    .. versionadded:: 0.1.5
+
+    """
+
     def __init__(self):
         self.tp = 0
         self.tn = 0
