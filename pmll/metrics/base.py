@@ -21,8 +21,8 @@ import math
 
 class QualityMeasurerLinear(object):
     def __init__(self):
-        self.sse = 0
-        self.sae = 0
+        self.sse = 0.0
+        self.sae = 0.0
         self._number_objects = 0
         self._actual_sum = 0.0
         self._actual_min = None
