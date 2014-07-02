@@ -167,6 +167,10 @@ class DataTest(unittest.TestCase):
             data.objects.shape[0]
         )
 
+    def test_nfeatures(self):
+        data = Data([[0]], [Feature("f1")]) + Data([[0]], [Feature("f2")])
+        self.assertEqual(data.nfeatures, 2)
+
 
 class DataReaderTest(unittest.TestCase):
     def setUp(self):

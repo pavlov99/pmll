@@ -148,6 +148,8 @@ class Data(object):
     def split(cls, data, ratio=None, size=None):
         """ Split data objects into two groups.
 
+        .. versionadded:: 0.1.4
+
         Method is used to split data into train and test sets.
         Specify either ratio or size.
 
