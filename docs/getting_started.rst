@@ -59,3 +59,111 @@ It is possible to multiply linear features, for example square equals length tim
 
    In [13]: volume(cube)
    Out[13]: 8.0
+
+Data
+----
+
+Data class is used to represent objects using their features.
+
+.. sourcecode:: ipython
+
+   In [1]: from pmll.data import Data
+   In [2]: from pmll.feature import FeatureLin
+   In [3]: d = Data([[0, 1, 2], [3, 1, 4], [-2, 0, 1], [2, -1, -1], [0, 0, 2]])
+
+Data is used for objects manipulation. It also provides some statistical information, such as Variance inflation factor:
+
+.. sourcecode:: ipython
+
+  In [4]: d.vif
+  Out[4]: [0.22780361757105938, 0.5469767441860465, 0.34108527131782956]
+
+and for each feature there is basic statistical information:
+
+.. sourcecode:: ipython
+
+  In [5]: d.stat
+  Out[5]:
+  {<class 'pmll.feature.models.FeatureLin'>: f0 (scale=lin): {'max': 3.0,
+    'mean': 0.59999999999999998,
+    'min': -2.0,
+    'std': 1.7435595774162693,
+    'var': 3.04},
+   <class 'pmll.feature.models.FeatureLin'>: f1 (scale=lin): {'max': 1.0,
+    'mean': 0.20000000000000001,
+    'min': -1.0,
+    'std': 0.74833147735478833,
+    'var': 0.56000000000000005},
+   <class 'pmll.feature.models.FeatureLin'>: f2 (scale=lin): {'max': 4.0,
+    'mean': 1.6000000000000001,
+    'min': -1.0,
+    'std': 1.6248076809271921,
+    'var': 2.6400000000000001}}
+
+Data object could be converted to numpy.matrix if features are linear:
+
+.. sourcecode:: ipython
+   
+   In [6]: d.matrix
+   Out[6]:
+   matrix([[ 0.,  1.,  2.],
+           [ 3.,  1.,  4.],
+           [-2.,  0.,  1.],
+           [ 2., -1., -1.],
+           [ 0.,  0.,  2.]])
+
+To extend data objects, add them directly to data.objects. To extend data features, it is possible to sum data objects.
+Note, that data objects sould have the same number of objects and not intersected features.
+
+.. sourcecode:: ipython
+   
+    In [7]: d2 = Data([[3], [7], [1], [-2], [4]], features=[FeatureLin('f3')])
+    In [8]: d = d + d2
+
+Quality metrics calculation
+---------------------------
+
+In this part we use the same data object `d` as before. We will predict one feature using others and calculate quality metrics.
+In terms of data mining problem, it would be quality measure on train set.
+
+.. sourcecode:: ipython
+
+    In [9]: X, Y = d[:, :-1].matrix, d[:, -1:].matrix
+
+We use least squares method here:
+
+.. sourcecode:: ipython
+
+    In [10]: w = (X.T * X) ** (-1) * X.T * Y
+    In [11]: w
+    Out[11]: matrix([[ 0.07751938], [-0.02325581],  [1.71317829]])
+
+Prediction for train set would be
+
+.. sourcecode:: ipython
+
+    In [12]: prediction = X * w
+    In [13]: prediction
+    Out[13]:
+    matrix([[ 3.40310078],
+            [ 7.0620155 ],
+            [ 1.55813953],
+            [-1.53488372],
+            [ 3.42635659]])
+
+Lets measure quality of prediction of train set.
+
+.. sourcecode:: ipython
+
+    In [14]: from pmll.metrics.base import QualityMeasurerLinear
+    In [15]: q = QualityMeasurerLinear()
+    In [16]: for p, y in zip(prediction.tolist(), Y.tolist()):
+       ....:     q.append(p[0], y[0])
+       
+    In [17]: (q.mse, q.mae, q.rmse, q.nrmse, q.cvrmse)
+    Out[17]:
+    (0.20465116279069767,
+    0.41240310077519365,
+    0.4523838666339657,
+    0.050264874070440634,
+    0.17399379485921757)
