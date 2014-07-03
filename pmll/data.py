@@ -35,18 +35,14 @@ class Data(object):
         :param list features: list of Features
 
         """
-        fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
-
-        if features and len(features) > len(set(features)):
+        if features is not None and len(features) > len(set(features)):
             raise ValueError("Features are intersected, but should be unique")
 
         objects = list(objects)
         self.features = features or \
             [Feature("f{0}".format(i)).proxy for i in range(len(objects[0]))]
-        dtype = np.dtype([fdtype(f) for f in self.features])
-        self.objects = np.array([tuple(obj) for obj in objects], dtype=dtype)
 
-        self.nobjects = self.objects.shape[0]
+        self._objects = [tuple(obj) for obj in objects]
         self.nfeatures = len(self.features)
 
     def __repr__(self):
@@ -60,6 +56,16 @@ class Data(object):
         if not all(f.scale == "lin" for f in self.features):
             raise ValueError("Could convert only for lenear features")
         return np.matrix(self.objects.tolist())
+
+    @property
+    def objects(self):
+        fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
+        dtype = np.dtype([fdtype(f) for f in self.features])
+        return np.array(self._objects, dtype=dtype)
+
+    @property
+    def nobjects(self):
+        return len(self._objects)
 
     def __eq__(self, other):
         """ Check equality of datasets.
@@ -102,7 +108,7 @@ class Data(object):
             return Data(objects, features)
 
     def __add__(self, other):
-        if self.objects.shape[0] != other.objects.shape[0]:
+        if self.nobjects != other.nobjects:
             raise ValueError("Number of objects should be equal")
 
         objects = [list(o1) + list(o2) for o1, o2
