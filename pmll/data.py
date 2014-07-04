@@ -3,6 +3,7 @@ from collections import namedtuple
 import itertools
 import numpy as np
 import random
+import types
 
 from . import six
 from .feature import Feature
@@ -10,9 +11,11 @@ from .utils import cached_property
 
 
 class Data(object):
+
     """ General data representation.
-    It is object-feature matrix. There is no label, all of the features are
-    equal. It is job for data manager to define what is label.
+
+    It is object-feature matrix. There are no labels, all of the features are
+    equal. It is job for data miner to define what features are labels.
 
     Attributes:
         features    list of features. If features are not provided, they are
@@ -31,19 +34,20 @@ class Data(object):
     def __init__(self, objects, features=None):
         """ Init data class.
 
-        :param list objects: convertable to list instances
+        :param list or generator objects: sequence of instances
         :param list features: list of Features
 
         """
         if features is not None and len(features) > len(set(features)):
             raise ValueError("Features are intersected, but should be unique")
 
-        objects = list(objects)
+        self.objects = objects
         self.features = features or \
-            [Feature("f{0}".format(i)).proxy for i in range(len(objects[0]))]
+            [Feature("f{0}".format(i)).proxy for i in
+             range(len(six.next(self.objects)))]
 
-        self._objects = [tuple(obj) for obj in objects]
-        self.nfeatures = len(self.features)
+        self.is_big = isinstance(objects, types.GeneratorType)
+        #self.nfeatures = len(self.features)
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
@@ -57,11 +61,35 @@ class Data(object):
             raise ValueError("Could convert only for lenear features")
         return np.matrix(self.objects.tolist())
 
-    @property
-    def objects(self):
+    def array(self):
         fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
         dtype = np.dtype([fdtype(f) for f in self.features])
         return np.array(self._objects, dtype=dtype)
+
+    def __get_objects(self):
+        """ Get data objects.
+        Data is big by default.
+        """
+        objects, self._objects = itertools.tee(self._objects)
+        if not getattr(self, 'is_big', True):
+            objects = [o for o in objects]
+        return objects
+
+    def __set_objects(self, objects):
+        if isinstance(objects, types.GeneratorType):
+            self._objects = objects
+        else:
+            self._objects = (o for o in objects)
+
+    objects = property(__get_objects, __set_objects)
+
+    def __get_features(self):
+        return self._features
+
+    def __set_features(self, features):
+        self._features = features
+
+    features = property(__get_features, __set_features)
 
     @property
     def nobjects(self):
