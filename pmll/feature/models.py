@@ -2,6 +2,7 @@
 from __future__ import division
 from collections import Counter
 import numpy as np
+import hashlib
 import sympy
 
 from .. import six
@@ -81,6 +82,12 @@ class Feature(object):
         assert title is not None or formula is not None
         self.formula = formula if formula is not None else sympy.Symbol(title)
         self.scale = self.scale or scale
+
+        if title is not None:
+            self.title = title
+        else:
+            self.title = 'f' + hashlib.md5(str(self.formula)).hexdigest()
+
         self._atoms_map = {self.title: self}
 
     @property
@@ -89,12 +96,8 @@ class Feature(object):
         obj._atoms_map = self._atoms_map  # FIXME: add test to that line
         return obj
 
-    @property
-    def title(self):
-        return str(self.formula)
-
     def __str__(self):
-        return self.title
+        return str(self.formula)
 
     def __repr__(self):
         return "{0}: {1} (scale={2})".format(self.__class__, self, self.scale)

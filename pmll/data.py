@@ -98,6 +98,12 @@ class Data(object):
         return self._features
 
     def __set_features(self, features):
+        for f in features:
+            if not all(c.isalnum() or c == '_' for c in f.title):
+                raise ValueError(
+                    'Type names and field names can only contain alphanumeric'
+                    ' characters and underscores: {}'.format(f.title))
+
         self._features = features
 
     features = property(__get_features, __set_features)

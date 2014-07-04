@@ -17,11 +17,11 @@ class FeatureTest(unittest.TestCase):
 
     def setUp(self):
         self.feature = Feature('f')
-        self.feature_nom = Feature('f', 'nom')
-        self.feature_lin = Feature('f', 'lin')
-        self.feature_rank = Feature('f', 'rank')
-        self.feature_bin = Feature('f', 'bin')
-        self.feature_nom2 = Feature('f', 'nom')
+        self.feature_nom = FeatureNom('f')
+        self.feature_lin = FeatureLin('f')
+        self.feature_rank = FeatureRank('f')
+        self.feature_bin = FeatureBin('f')
+        self.feature_nom2 = FeatureNom('f')
 
     def test__eq__(self):
         self.assertNotEqual(id(self.feature_nom), id(self.feature_nom2))

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import math
 import unittest
+import types
+from collections import namedtuple
 
 from ..data import (
     Data,
@@ -38,6 +40,26 @@ class FeatureTest(unittest.TestCase):
 
 
 class DataTest(unittest.TestCase):
+    def test_objects(self):
+        data = Data([[1, 2]])
+        Object = namedtuple('Object', ["f0", "f1"])
+        objects_expected = [Object(1, 2)]
+        self.assertEqual(data.objects, objects_expected)
+
+    def test_objects_generator(self):
+        data = Data((o for o in [[1, 2]]))
+        self.assertTrue(isinstance(data.objects, types.GeneratorType))
+        Object = namedtuple('Object', ["f0", "f1"])
+        objects_expected = [Object(1, 2)]
+        self.assertEqual(list(data.objects), objects_expected)
+
+    def test_features(self):
+        features = [FeatureLin("a")]
+        f = features[0] + 1
+        data = Data([[0]], features)
+        data.features = [f]
+        self.assertEqual(data.objects[0], (0,))
+
     def test_init_features(self):
         self.data_file_content = "\n".join(
             [
