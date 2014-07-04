@@ -125,7 +125,7 @@ class Data(object):
         for obj1, obj2 in itertools.izip(self.objects, other.objects):
             # Compare objects feature by feature
             for f in self.features:
-                if getattr(obj1, f.title) != getattr(obj2, f.title):
+                if f(obj1) != f(obj2):
                     return False
 
         return True
