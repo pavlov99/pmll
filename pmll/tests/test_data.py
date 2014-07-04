@@ -77,7 +77,7 @@ class DataTest(unittest.TestCase):
         self.assertEqual(tuple(Data([[0]])[0, 0]), (0, ))
 
     def test_getitem(self):
-        data = Data([('0', '1'), ('2', '3')])
+        data = Data([(0, 1), (2, 3)])
         self.assertEqual(data[:], data)
         self.assertEqual(tuple(data[0, :]), (0, 1))
         self.assertEqual(tuple(data[0]), (0, 1))
@@ -151,8 +151,8 @@ class DataTest(unittest.TestCase):
         d1, d2 = Data.split(data, size=1)
         self.assertTrue(isinstance(d1, Data))
         self.assertTrue(isinstance(d2, Data))
-        self.assertEqual(d1.objects.shape[0], 1)
-        self.assertEqual(d2.objects.shape[0], 2)
+        self.assertEqual(d1.nobjects, 1)
+        self.assertEqual(d2.nobjects, 2)
 
     def test_split_ratio(self):
         data = Data([[x] for x in range(100)])
@@ -161,11 +161,8 @@ class DataTest(unittest.TestCase):
         self.assertTrue(isinstance(d2, Data))
 
         # probability of opposite = 8.44e-08
-        self.assertTrue(d1.objects.shape[0] < 20)
-        self.assertEqual(
-            d1.objects.shape[0] + d2.objects.shape[0],
-            data.objects.shape[0]
-        )
+        self.assertTrue(d1.nobjects < 20)
+        self.assertEqual(d1.nobjects + d2.nobjects, data.nobjects)
 
     def test_nfeatures(self):
         data = Data([[0]], [Feature("f1")]) + Data([[0]], [Feature("f2")])
