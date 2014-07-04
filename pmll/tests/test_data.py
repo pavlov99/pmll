@@ -22,21 +22,22 @@ class FeatureTest(unittest.TestCase):
     def test__call__data(self):
         data = Data([[1, 2, 3],
                      [3, 4, 5]])
-        self.assertEqual(data.features[0](data), data[:, 0])
-        self.assertEqual(data.features[1](data), data[:, 1])
-        self.assertEqual(data.features[2](data), data[:, 2])
+        self.assertEqual(data.features[0](data), [1, 3])
+        self.assertEqual(data.features[1](data), [2, 4])
+        self.assertEqual(data.features[2](data), [3, 5])
+
+    def test__call__data_generator(self):
+        data = Data((x for x in [[1, 2]]))
+        self.assertTrue(
+            isinstance(data.features[0](data), types.GeneratorType))
+        self.assertEqual(list(data.features[0](data)), [1])
 
     def test__call__data__new_feature(self):
         f1, f2 = FeatureLin("f1"), FeatureLin("f2")
         data = Data([[2, 3],
                      [0, 1]], features=[f1, f2])
-        self.assertEqual(
-            (f1 + f2)(data),
-            Data([[5], [1]], features=[f1 + f2]))
-
-        self.assertEqual(
-            (f1 * f2)(data),
-            Data([[6], [0]], features=[f1 * f2]))
+        self.assertEqual((f1 + f2)(data), [5, 1])
+        self.assertEqual((f1 * f2)(data), [6, 0])
 
 
 class DataTest(unittest.TestCase):

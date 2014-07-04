@@ -119,10 +119,10 @@ class Feature(object):
         from ..data import Data
 
         if isinstance(objects, Data):
-            if self in objects.features:
-                return objects[:, self]
-            else:
-                return Data([[self(o)] for o in objects], features=[self])
+            values = (self(o) for o in objects.objects)
+            if not objects.is_big:
+                values = list(values)
+            return values
         else:
             if self.formula.is_Atom:
                 result = getattr(objects, self.title)
