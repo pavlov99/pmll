@@ -10,7 +10,9 @@ from .utils import cached_property
 
 
 class Data(object):
+
     """ General data representation.
+
     It is object-feature matrix. There is no label, all of the features are
     equal. It is job for data manager to define what is label.
 
@@ -177,6 +179,17 @@ class Data(object):
             Data(objs1, features=data.features),
             Data(objs2, features=data.features),
         )
+
+    def get_autoregression_data(self, feature, period):
+        """ Get autocorrelation matrix for given feature.
+
+        .. versionadded:: 0.1.6
+        """
+        values = [o[0] for o in self[:, feature].objects]
+        data = Data([
+            values[i:i + period] for i in range(len(values) - period + 1)
+        ])
+        return data
 
 
 class DataReader(object):

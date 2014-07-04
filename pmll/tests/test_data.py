@@ -171,6 +171,12 @@ class DataTest(unittest.TestCase):
         data = Data([[0]], [Feature("f1")]) + Data([[0]], [Feature("f2")])
         self.assertEqual(data.nfeatures, 2)
 
+    def test_get_autoregression_data(self):
+        data = Data([[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]])
+        result = data.get_autoregression_data(data.features[0], period=3)
+        result_expected = Data([[0, 2, 4], [2, 4, 6], [4, 6, 8]])
+        self.assertEqual(result, result_expected)
+
 
 class DataReaderTest(unittest.TestCase):
     def setUp(self):
