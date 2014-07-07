@@ -65,6 +65,13 @@ class Feature(object):
                     variables.
         convert_atoms {"feature_title": feature} allows complicated feature
                     calculation.
+
+        .. versionchanged:: 0.2.0
+           If title is not provided, it is assumed that feature is not atomic
+           and it was generated based on other features. To be able to print it
+           need to generate name. Use hash for name of new feature. There is no
+           way to generate it correctly with ability to use title as attribute.
+
         """
         assert title is not None or formula is not None
         self.formula = formula if formula is not None else sympy.Symbol(title)
@@ -80,6 +87,12 @@ class Feature(object):
 
     @property
     def proxy(self):
+        """ Get proxy feature instance based on scale.
+
+        .. versionchanged:: 0.2.0
+           provide title to feature constructor
+
+        """
         obj = self.__class__.__store__[self.scale](
             title=self.title, formula=self.formula)
         obj._atoms_map = self._atoms_map  # FIXME: add test to that line
@@ -109,6 +122,12 @@ class Feature(object):
         return hash((self.scale, self.title))
 
     def __call__(self, objects):
+        """ Call feature with objects.
+
+        .. versionchanged:: 0.2.0
+           Return list or generator for Data object instead of Data.
+
+        """
         from ..data import Data
 
         if isinstance(objects, Data):
