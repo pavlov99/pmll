@@ -71,7 +71,11 @@ class Data(object):
         return np.array(self._objects, dtype=dtype)
 
     def __generate_actual_objects_from_atomic(self, objects):
-        """ Given atomic objects generator get current features objects."""
+        """ Given atomic objects generator get current features objects.
+
+        .. versionadded:: 0.2.0
+
+        """
         Object = namedtuple('Object', [f.title for f in self.features])
         AtomicFeaturesObject = namedtuple(
             'AtomicFeaturesObject',
@@ -87,7 +91,12 @@ class Data(object):
             yield actual_object
 
     def __get_objects(self):
-        """ Get data objects."""
+        """ Get data objects.
+
+        .. versionchanged:: 0.2.0
+        Generate objects according to current features
+
+        """
         objects, self._objects = itertools.tee(self._objects)
 
         if getattr(self, 'features', None) is not None:
