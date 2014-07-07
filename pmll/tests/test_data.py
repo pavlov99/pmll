@@ -3,6 +3,7 @@ import math
 import unittest
 import types
 from collections import namedtuple
+import numpy as np
 
 from ..data import (
     Data,
@@ -56,12 +57,22 @@ class DataTest(unittest.TestCase):
         objects_expected = [Object(1, 2)]
         self.assertEqual(list(data.objects), objects_expected)
 
-    def test_features(self):
+    def test_features_basic(self):
+        data = Data([[0]])
+        self.assertNotEqual(id(data.features), id(data._atomic_features))
+
+    def test_objects_features(self):
         features = [FeatureLin("a")]
         f = features[0] + 1
         data = Data([[0]], features)
-        data.features = [f]
-        self.assertEqual(data.objects[0], (0,))
+        data.features.append(f)
+        self.assertEqual(data.objects[0], (0, 1))
+
+    def test_objects_features_decrease(self):
+        data = Data([[0, 1]])
+        data.features = [data.features[0] - 1]
+        objects_expected = [(-1, )]
+        self.assertEqual(data.objects, objects_expected)
 
     def test_init_features(self):
         self.data_file_content = "\n".join(
@@ -198,6 +209,15 @@ class DataTest(unittest.TestCase):
         result = data.get_autoregression_data(data.features[0], period=3)
         result_expected = Data([[0, 2, 4], [2, 4, 6], [4, 6, 8]])
         self.assertEqual(result, result_expected)
+
+    def test_matrix(self):
+        data = Data([[0, 1], [2, 3], [4, 5]])
+        matrix = np.matrix([[0, 1], [2, 3], [4, 5]])
+        self.assertTrue((data.matrix == matrix).all())
+
+        data.features.append(data.features[0] ** 2)
+        matrix = np.matrix([[0, 1, 0], [2, 3, 4], [4, 5, 16]])
+        self.assertTrue((data.matrix == matrix).all())
 
 
 class DataReaderTest(unittest.TestCase):

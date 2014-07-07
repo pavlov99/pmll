@@ -47,7 +47,7 @@ class Data(object):
         self._atomic_features = features or [
             Feature("f{0}".format(i)).proxy for i in
             range(len(six.next(self.objects)))]
-        self.features = self._atomic_features
+        self.features = [f for f in self._atomic_features]
         self.is_big = isinstance(objects, types.GeneratorType)
 
     def __repr__(self):
@@ -70,17 +70,28 @@ class Data(object):
         dtype = np.dtype([fdtype(f) for f in self.features])
         return np.array(self._objects, dtype=dtype)
 
+    def __generate_actual_objects_from_atomic(self, objects):
+        """ Given atomic objects generator get current features objects."""
+        Object = namedtuple('Object', [f.title for f in self.features])
+        AtomicFeaturesObject = namedtuple(
+            'AtomicFeaturesObject',
+            [f.title for f in self._atomic_features]
+        )
+        # NOTE: convert object generator to Object generator.
+        # Use features from features.
+        for obj in objects:
+            atomic_features_object = AtomicFeaturesObject(*obj)
+            actual_object = Object(
+                *[f(atomic_features_object) for f in self.features]
+            )
+            yield actual_object
+
     def __get_objects(self):
-        """ Get data objects.
-        Data is big by default.
-        """
+        """ Get data objects."""
         objects, self._objects = itertools.tee(self._objects)
 
         if getattr(self, 'features', None) is not None:
-            Object = namedtuple('Object', [f.title for f in self.features])
-            # NOTE: convert object generator to Object generator.
-            # Use features from features.
-            objects = (Object(*o) for o in objects)
+            objects = self.__generate_actual_objects_from_atomic(objects)
 
         if not getattr(self, 'is_big', True):
             objects = [o for o in objects]
