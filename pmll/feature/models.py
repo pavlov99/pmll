@@ -73,7 +73,8 @@ class Feature(object):
         if title is not None:
             self.title = title
         else:
-            self.title = 'f' + hashlib.md5(str(self.formula)).hexdigest()
+            self.title = 'f' + hashlib.md5(
+                str(self.formula).encode('utf8')).hexdigest()
 
         self._atoms_map = {self.title: self}
 

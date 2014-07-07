@@ -128,7 +128,7 @@ class Data(object):
             return False
 
         # Object by object comparison
-        for obj1, obj2 in itertools.izip(self.objects, other.objects):
+        for obj1, obj2 in six.moves.zip(self.objects, other.objects):
             # Compare objects feature by feature
             for f in self.features:
                 if f(obj1) != f(obj2):
