@@ -6,7 +6,7 @@ Getting started
 ***************
 
 Install
-=============================
+=======
 
 To install `pmll` use pip::
 
@@ -167,3 +167,58 @@ Lets measure quality of prediction of train set.
     0.4523838666339657,
     0.050264874070440634,
     0.17399379485921757)
+
+
+Feature Generation
+==================
+
+Feature generation is sweet with pmll. Unlike other libraries, pmll works with features, rather than data matrix columns.
+It allows to perform operations in feature space and then get objects for current data features.
+
+Polynomial regression
+
+Consider function as data object. First feature is x values, second feature is y values.
+
+.. sourcecode:: ipython
+
+   In [1]: from pmll.data import Data
+   In [2]: from pmll.feature import FeatureLin
+   In [3]: import math
+   In [4]: d = Data([[x, math.sin(x)] for x in range(5)], features=[FeatureLin('x'), FeatureLin('y')])
+
+Problem is to predict y value for x=4 using previous values.
+Linear model without feature generation is y = x * w
+
+.. sourcecode:: ipython
+
+    In [5]: X, Y = d.matrix[:-1, :-1], d.matrix[:-1, -1:]
+    In [6]: w = (X.T * X) ** (-1) * X.T * Y
+    In [7]: error = (d.matrix[-1:, :-1] * w - d.matrix[-1:, -1:]) ** 2
+    In [8]: error
+    Out[8]: matrix([[ 2.68232763]])
+
+Lets generate features. Start with constant, so, model is y = w_0 + x * w_1 or (1, x) * (w_0, w_1)
+
+.. sourcecode:: ipython
+
+    In [9]: d.features = [d.features[0] ** 0] + d.features
+    In [10]: d.matrix
+    Out[10]: matrix([[ 1.        ,  0.        ,  0.        ],
+                     [ 1.        ,  1.        ,  0.84147098],
+                     [ 1.        ,  2.        ,  0.90929743],
+                     [ 1.        ,  3.        ,  0.14112001],
+                     [ 1.        ,  4.        , -0.7568025 ]])
+
+    In [11]: X, Y = d.matrix[:-1, :-1], d.matrix[:-1, -1:]
+    In [12]: w = (X.T * X) ** (-1) * X.T * Y
+    In [13]: error = (d.matrix[-1:, :-1] * w - d.matrix[-1:, -1:]) ** 2
+    In [14]: error
+    Out[14]: matrix([[ 1.8294489]])
+
+Finally we use model y = w_3 * x^3 + w_2 * x^2 + w_1 * x + w_0
+
+.. sourcecode:: ipython
+
+   In [15]: d.features = d.features[:2] + [d.features[1] ** 2, d.features[1] ** 3] + d.features[2:]
+   In [14]: error
+   Out[14]: matrix([[ 0.59077377]])
