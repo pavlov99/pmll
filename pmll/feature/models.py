@@ -53,7 +53,7 @@ class Feature(object):
     DEFAULT_SCALE = "lin"
     DEFAULT_TYPE = FEATURE_TYPE_MAP[DEFAULT_SCALE][0]
 
-    def __init__(self, title=None, formula=None, scale=DEFAULT_SCALE):
+    def __init__(self, title=None, formula=None, scale=None):
         """Init Feature class
 
         scale:      feature scale, defines result type and operations allowed
@@ -68,7 +68,7 @@ class Feature(object):
         """
         assert title is not None or formula is not None
         self.formula = formula if formula is not None else sympy.Symbol(title)
-        self.scale = self.scale or scale
+        self.scale = self.scale or scale or self.DEFAULT_SCALE
 
         if title is not None:
             self.title = title
@@ -80,7 +80,8 @@ class Feature(object):
 
     @property
     def proxy(self):
-        obj = self.__class__.__store__[self.scale](formula=self.formula)
+        obj = self.__class__.__store__[self.scale](
+            title=self.title, formula=self.formula)
         obj._atoms_map = self._atoms_map  # FIXME: add test to that line
         return obj
 

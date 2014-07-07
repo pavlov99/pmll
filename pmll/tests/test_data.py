@@ -46,6 +46,8 @@ class DataTest(unittest.TestCase):
         Object = namedtuple('Object', ["f0", "f1"])
         objects_expected = [Object(1, 2)]
         self.assertEqual(data.objects, objects_expected)
+        self.assertEqual(
+            data.objects[0]._asdict(), objects_expected[0]._asdict())
 
     def test_objects_generator(self):
         data = Data((o for o in [[1, 2]]))
