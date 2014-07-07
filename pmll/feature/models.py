@@ -26,19 +26,6 @@ class FeatureMeta(type):
             lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
                 scale, (Feature.DEFAULT_TYPE,))[0](x)))
 
-        if scale == "lin":
-            getstat = lambda cls, list_: {
-                "mean": np.array(list_).mean(),
-                "std": np.array(list_).std(),
-                "var": np.array(list_).var(),
-                "min": np.array(list_).min(),
-                "max": np.array(list_).max(),
-            }
-        else:
-            getstat = lambda cls, list_: dict(Counter(list_))
-
-        setattr(class_, "getstat", classmethod(getstat))
-
         cls.__store__[scale] = class_
         return class_
 
@@ -95,6 +82,10 @@ class Feature(object):
         obj = self.__class__.__store__[self.scale](formula=self.formula)
         obj._atoms_map = self._atoms_map  # FIXME: add test to that line
         return obj
+
+    @classmethod
+    def getstat(cls, list_):
+        return dict(Counter(list_))
 
     def __str__(self):
         return str(self.formula)
@@ -157,6 +148,15 @@ class FeatureBin(Feature):
 
 
 class FeatureLin(Feature):
+    def getstat(cls, list_):
+        return {
+            "mean": np.array(list_).mean(),
+            "std": np.array(list_).std(),
+            "var": np.array(list_).var(),
+            "min": np.array(list_).min(),
+            "max": np.array(list_).max(),
+        }
+
     def __neg__(self):
         f = FeatureLin(formula=-self.formula)
         f._atoms_map.update(self._atoms_map)

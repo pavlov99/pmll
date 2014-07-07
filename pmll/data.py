@@ -201,7 +201,7 @@ class Data(object):
     @property
     def stat(self):
         return {
-            feature: feature.getstat(self.objects[feature.title])
+            feature: feature.getstat(feature(self))
             for feature in self.features}
 
     @classmethod
