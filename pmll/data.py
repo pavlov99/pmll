@@ -3,18 +3,18 @@ from collections import namedtuple
 import itertools
 import numpy as np
 import random
+import types
 
 from . import six
 from .feature import Feature
-from .utils import cached_property
 
 
 class Data(object):
 
     """ General data representation.
 
-    It is object-feature matrix. There is no label, all of the features are
-    equal. It is job for data manager to define what is label.
+    It is object-feature matrix. There are no labels, all of the features are
+    equal. It is job for data miner to define what features are labels.
 
     Attributes:
         features    list of features. If features are not provided, they are
@@ -33,55 +33,128 @@ class Data(object):
     def __init__(self, objects, features=None):
         """ Init data class.
 
-        :param list objects: convertable to list instances
+        :param list or generator objects: sequence of instances
         :param list features: list of Features
+            Based on fetures passed there are two attributes created:
+            _atomic_features - initial atomic features
+            features - visible features, consist of atomic features in formulas
 
         """
         if features is not None and len(features) > len(set(features)):
             raise ValueError("Features are intersected, but should be unique")
 
-        objects = list(objects)
-        self.features = features or \
-            [Feature("f{0}".format(i)).proxy for i in range(len(objects[0]))]
-
-        self._objects = [tuple(obj) for obj in objects]
-        self.nfeatures = len(self.features)
+        self.objects = objects
+        self._atomic_features = features or [
+            Feature("f{0}".format(i)).proxy for i in
+            range(len(six.next(self.objects)))]
+        self.features = [f for f in self._atomic_features]
+        self.is_big = isinstance(objects, types.GeneratorType)
 
     def __repr__(self):
         return "Features: {0}\n{1}".format(
             " ".join([str(f) for f in self.features]),
             self.objects.__repr__())
 
-    @cached_property
+    @property
     def matrix(self):
         """Return matrix of objects if features are linear."""
         if not all(f.scale == "lin" for f in self.features):
             raise ValueError("Could convert only for lenear features")
-        return np.matrix(self.objects.tolist())
+        return np.matrix(list(self.objects))
 
     @property
-    def objects(self):
+    def array(self):
+        # TODO: move to matrix creation.
+        # NOTE: do we need array?
         fdtype = lambda f: (f.title, ) + Feature.FEATURE_TYPE_MAP[f.scale]
         dtype = np.dtype([fdtype(f) for f in self.features])
         return np.array(self._objects, dtype=dtype)
 
+    def __generate_actual_objects_from_atomic(self, objects):
+        """ Given atomic objects generator get current features objects.
+
+        .. versionadded:: 0.2.0
+
+        """
+        Object = namedtuple('Object', [f.title for f in self.features])
+        AtomicFeaturesObject = namedtuple(
+            'AtomicFeaturesObject',
+            [f.title for f in self._atomic_features]
+        )
+        # NOTE: convert object generator to Object generator.
+        # Use features from features.
+        for obj in objects:
+            atomic_features_object = AtomicFeaturesObject(*obj)
+            actual_object = Object(
+                *[f(atomic_features_object) for f in self.features]
+            )
+            yield actual_object
+
+    def __get_objects(self):
+        """ Get data objects.
+
+        .. versionchanged:: 0.2.0
+        Generate objects according to current features
+
+        """
+        objects, self._objects = itertools.tee(self._objects)
+
+        if getattr(self, 'features', None) is not None:
+            objects = self.__generate_actual_objects_from_atomic(objects)
+
+        if not getattr(self, 'is_big', True):
+            objects = [o for o in objects]
+        return objects
+
+    def __set_objects(self, objects):
+        if isinstance(objects, types.GeneratorType):
+            self._objects = objects
+        else:
+            self._objects = (o for o in objects)
+
+    objects = property(__get_objects, __set_objects)
+
+    def __get_features(self):
+        return self._features
+
+    def __set_features(self, features):
+        for f in features:
+            if not all(c.isalnum() or c == '_' for c in f.title):
+                raise ValueError(
+                    'Type names and field names can only contain alphanumeric'
+                    ' characters and underscores: {}'.format(f.title))
+
+        self._features = features
+
+    features = property(__get_features, __set_features)
+
     @property
     def nobjects(self):
-        return len(self._objects)
+        return sum(1 for x in self.objects)
+
+    @property
+    def nfeatures(self):
+        return len(self.features)
 
     def __eq__(self, other):
         """ Check equality of datasets.
 
-        data1 == data2 if they have the same features and
-        objects being sorted according to data1.features are equal.
-        :return bool:
+        data1 == data2 if they have the same features and for each object
+        pair feature values are the same.
 
+        :return bool:
         """
-        l1 = list(zip(*[list(self.objects[f.title])
-                        for f in sorted(self.features)]))
-        l2 = list(zip(*[list(other.objects[f.title])
-                        for f in sorted(other.features)]))
-        return set(self.features) == set(other.features) and l1 == l2
+        if set(self.features) != set(other.features):
+            return False
+
+        # Object by object comparison
+        for obj1, obj2 in six.moves.zip(self.objects, other.objects):
+            # Compare objects feature by feature
+            for f in self.features:
+                if f(obj1) != f(obj2):
+                    return False
+
+        return True
 
     def __ne__(self, other):
         return not (self == other)
@@ -100,11 +173,10 @@ class Data(object):
 
         features = self.features.__getitem__(key[1])
 
-        objects = self.objects.__getitem__(key[0]).tolist()
-        Object = namedtuple('Object', [f.title for f in features])
+        objects = self.objects.__getitem__(key[0])
 
         if isinstance(key[0], int):
-            return Object(*objects)
+            return objects
         else:
             objects = [list(o).__getitem__(key[1]) for o in objects]
             return Data(objects, features)
@@ -149,7 +221,7 @@ class Data(object):
     @property
     def stat(self):
         return {
-            feature: feature.getstat(self.objects[feature.title])
+            feature: feature.getstat(feature(self))
             for feature in self.features}
 
     @classmethod

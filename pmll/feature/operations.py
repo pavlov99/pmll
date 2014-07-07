@@ -2,9 +2,6 @@
 """Operations for Features. Methods are patched methods for sympy.core.Expr"""
 import sympy
 
-__author__ = "Kirill Pavlov"
-__email__ = "kirill.pavlov@phystech.edu"
-
 
 def wrap_feature(feature_scale):
     """Decorate method for Features with given scale."""

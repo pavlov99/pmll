@@ -2,6 +2,7 @@
 from __future__ import division
 from collections import Counter
 import numpy as np
+import hashlib
 import sympy
 
 from .. import six
@@ -24,19 +25,6 @@ class FeatureMeta(type):
         setattr(class_, "convert", classmethod(
             lambda cls, x: Feature.FEATURE_TYPE_MAP.get(
                 scale, (Feature.DEFAULT_TYPE,))[0](x)))
-
-        if scale == "lin":
-            getstat = lambda cls, list_: {
-                "mean": np.array(list_).mean(),
-                "std": np.array(list_).std(),
-                "var": np.array(list_).var(),
-                "min": np.array(list_).min(),
-                "max": np.array(list_).max(),
-            }
-        else:
-            getstat = lambda cls, list_: dict(Counter(list_))
-
-        setattr(class_, "getstat", classmethod(getstat))
 
         cls.__store__[scale] = class_
         return class_
@@ -65,7 +53,7 @@ class Feature(object):
     DEFAULT_SCALE = "lin"
     DEFAULT_TYPE = FEATURE_TYPE_MAP[DEFAULT_SCALE][0]
 
-    def __init__(self, title=None, formula=None, scale=DEFAULT_SCALE):
+    def __init__(self, title=None, formula=None, scale=None):
         """Init Feature class
 
         scale:      feature scale, defines result type and operations allowed
@@ -77,24 +65,45 @@ class Feature(object):
                     variables.
         convert_atoms {"feature_title": feature} allows complicated feature
                     calculation.
+
+        .. versionchanged:: 0.2.0
+           If title is not provided, it is assumed that feature is not atomic
+           and it was generated based on other features. To be able to print it
+           need to generate name. Use hash for name of new feature. There is no
+           way to generate it correctly with ability to use title as attribute.
+
         """
         assert title is not None or formula is not None
         self.formula = formula if formula is not None else sympy.Symbol(title)
-        self.scale = self.scale or scale
+        self.scale = self.scale or scale or self.DEFAULT_SCALE
+
+        if title is not None:
+            self.title = title
+        else:
+            self.title = 'f' + hashlib.md5(
+                str(self.formula).encode('utf8')).hexdigest()
+
         self._atoms_map = {self.title: self}
 
     @property
     def proxy(self):
-        obj = self.__class__.__store__[self.scale](formula=self.formula)
+        """ Get proxy feature instance based on scale.
+
+        .. versionchanged:: 0.2.0
+           provide title to feature constructor
+
+        """
+        obj = self.__class__.__store__[self.scale](
+            title=self.title, formula=self.formula)
         obj._atoms_map = self._atoms_map  # FIXME: add test to that line
         return obj
 
-    @property
-    def title(self):
-        return str(self.formula)
+    @classmethod
+    def getstat(cls, list_):
+        return dict(Counter(list_))
 
     def __str__(self):
-        return self.title
+        return str(self.formula)
 
     def __repr__(self):
         return "{0}: {1} (scale={2})".format(self.__class__, self, self.scale)
@@ -113,13 +122,19 @@ class Feature(object):
         return hash((self.scale, self.title))
 
     def __call__(self, objects):
+        """ Call feature with objects.
+
+        .. versionchanged:: 0.2.0
+           Return list or generator for Data object instead of Data.
+
+        """
         from ..data import Data
 
         if isinstance(objects, Data):
-            if self in objects.features:
-                return objects[:, self]
-            else:
-                return Data([[self(o)] for o in objects], features=[self])
+            values = (self(o) for o in objects.objects)
+            if not objects.is_big:
+                values = list(values)
+            return values
         else:
             if self.formula.is_Atom:
                 result = getattr(objects, self.title)
@@ -154,6 +169,15 @@ class FeatureBin(Feature):
 
 
 class FeatureLin(Feature):
+    def getstat(cls, list_):
+        return {
+            "mean": np.array(list_).mean(),
+            "std": np.array(list_).std(),
+            "var": np.array(list_).var(),
+            "min": np.array(list_).min(),
+            "max": np.array(list_).max(),
+        }
+
     def __neg__(self):
         f = FeatureLin(formula=-self.formula)
         f._atoms_map.update(self._atoms_map)
