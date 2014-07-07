@@ -74,6 +74,12 @@ class DataTest(unittest.TestCase):
         objects_expected = [(-1, )]
         self.assertEqual(data.objects, objects_expected)
 
+    def test_objects_features_constant(self):
+        data = Data([[0]])
+        data.features = [data.features[0] ** 0]
+        objects_expected = [(1, )]
+        self.assertEqual(data.objects, objects_expected)
+
     def test_init_features(self):
         self.data_file_content = "\n".join(
             [

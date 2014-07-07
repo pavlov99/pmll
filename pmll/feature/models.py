@@ -127,6 +127,10 @@ class Feature(object):
         .. versionchanged:: 0.2.0
            Return list or generator for Data object instead of Data.
 
+        .. versionchanged:: 0.2.1
+           Handle case if feature is Atom, but not Symbol. Example: constant
+           feature.
+
         """
         from ..data import Data
 
@@ -137,7 +141,11 @@ class Feature(object):
             return values
         else:
             if self.formula.is_Atom:
-                result = getattr(objects, self.title)
+                if self.formula.is_Symbol:
+                    result = getattr(objects, self.title)
+                else:
+                    # Formula is constant
+                    result = self.convert(self.formula)
             else:
                 subs = {
                     str(arg): self._atoms_map[str(arg)](objects)
