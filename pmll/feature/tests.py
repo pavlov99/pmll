@@ -8,6 +8,7 @@ from . import (
     FeatureLin,
     FeatureNom,
     FeatureRank,
+    operations
 )
 
 
@@ -241,3 +242,26 @@ class FeatureLinTest(unittest.TestCase):
     def test__rpow__constant(self):
         f = 2 ** self.f1
         self.assertEqual(f(self.Object(3, 0, 0)), 8)
+
+    def test_sin(self):
+        f = operations.sin(self.f1)
+        self.assertEqual(f(self.Object(0, 0, 0)), 0)
+        self.assertEqual(f(self.Object(1, 0, 0)), 0.8414709848078965)
+
+    def test_cos(self):
+        f = operations.cos(self.f1)
+        self.assertEqual(f(self.Object(0, 0, 0)), 1)
+        self.assertEqual(f(self.Object(10, 0, 0)), -0.8390715290764524)
+
+    def test_tan(self):
+        f = operations.tan(self.f1)
+        self.assertEqual(f(self.Object(0, 0, 0)), 0)
+        self.assertEqual(f(self.Object(1, 0, 0)), 1.5574077246549023)
+
+    def test_asin(self):
+        f = operations.acos(self.f1)
+        self.assertEqual(f(self.Object(0, 0, 0)), 1.5707963267948966)
+
+    def test_acos(self):
+        f = operations.acos(self.f1)
+        self.assertEqual(f(self.Object(1, 0, 0)), 0)
