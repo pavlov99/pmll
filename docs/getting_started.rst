@@ -60,6 +60,15 @@ It is possible to multiply linear features, for example square equals length tim
    In [13]: volume(cube)
    Out[13]: 8.0
 
+There are trigonometric functions available
+
+.. sourcecode:: ipython
+
+   In [14]: from pmll.feature.operations import sin, cos, tan
+   In [15]: f1sin = sin(f1)
+   In [16]: f1sin(cube)
+   Out[10]: 0.9092974268256817
+
 Data
 ----
 
