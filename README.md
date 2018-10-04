@@ -66,7 +66,3 @@ Example:
 
 ## Launchpad
 https://launchpad.net/pmll
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/pavlov99/pmll/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
