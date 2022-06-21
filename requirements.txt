@@ -1,5 +1,5 @@
 sympy==0.7.2
-numpy==1.8.1
+numpy==1.22.0
 
 # tests. NOTE: see tox file.
 # nose==1.3.0
